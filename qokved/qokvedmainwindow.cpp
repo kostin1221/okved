@@ -18,17 +18,16 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
    // qokved->fill_db_from_zakon("/home/BALTECH.LTD/admin/okved2.txt");
 
-    QList<Razdel> razdel_list = qokved->razdels_list();
+/*    QList<Razdel> razdel_list = qokved->razdels_list();
 
     for (int i = 0; i < razdel_list.size(); ++i) {
         Razdel razdel = razdel_list.at(i);
         ui->razdelsView->addItem(razdel.name);
 
-
     }
-
- /*
-    //qDebug() << QString::fromUtf8("05f").toInt();*/
+*/
+s
+    ui->razdelsView->setModel(qokved->razdels_model());
 
 }
 

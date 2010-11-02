@@ -14,7 +14,7 @@
    <string>QOkved</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QListWidget" name="razdelsView">
+   <widget class="QTableView" name="razdelsView">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

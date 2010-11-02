@@ -24,7 +24,8 @@ public:
     bool setDbPath(QString db_path);
     void create_tables();
     void fill_db_from_zakon(QString zakon);
-    QList<Razdel> razdels_list();
+    QSqlTableModel* razdels_model();
+    QList<Okved> okved_in_razdel_list(int razdel);
 
 private:
     QSqlDatabase db;

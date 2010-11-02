@@ -35,21 +35,33 @@ void Libqokved::create_tables()
       qDebug() << query.lastError();
 }
 
-QList<Razdel> Libqokved::razdels_list()
+QSqlTableModel* Libqokved::razdels_model()
 {
-    QSqlQuery query("SELECT rid, name FROM razdelz");
-    QList<Razdel> razdel_list;
-    while (query.next()) {
-        Razdel razdel;
-        razdel.rid = query.value(0).toInt();
-        razdel.name = query.value(1).toString();
-        razdel_list.append(razdel);
+    QSqlTableModel *model = new QSqlTableModel;
+    model->setTable("razdelz");
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->select();
+    model->removeColumn(0); // don't show the ID
+    model->setHeaderData(0, Qt::Horizontal, "Name");
 
-    }
-    return razdel_list;
+    return model;
+    //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
 
 }
 
+QList<Okved> Libqokved::okved_in_razdel_list(int razdel)
+{
+    QSqlQuery query("SELECT oid, name, addition FROM okveds WHERE razdel_id=");
+    QList<Okved> okved_list;
+    while (query.next()) {
+        Okved okved;
+     //  okved.rid = query.value(0).toInt();
+     //   okved.name = query.value(1).toString();
+        okved_list.append(okved);
+
+    }
+    return okved_list;
+}
 
 void Libqokved::fill_db_from_zakon(QString zakon)
 {
