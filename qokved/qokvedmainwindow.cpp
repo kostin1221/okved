@@ -14,9 +14,9 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved();
 
-    qokved->setDbPath("/home/BALTECH.LTD/admin/okved.db");
+    qokved->setDbPath("/home/dimon/okved.db");
 
-   // qokved->fill_db_from_zakon("/home/BALTECH.LTD/admin/okved2.txt");
+  //  qokved->fill_db_from_zakon("/home/dimon/okved.txt");
 
 /*    QList<Razdel> razdel_list = qokved->razdels_list();
 
@@ -26,9 +26,15 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     }
 */
-s
-    ui->razdelsView->setModel(qokved->razdels_model());
 
+    ui->razdelsView->setModel(qokved->razdels_model());
+    ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
+
+}
+
+void QOkvedMainWindow::okved_list_update(QModelIndex index)
+{
+    qDebug() << "clicked";
 }
 
 QOkvedMainWindow::~QOkvedMainWindow()

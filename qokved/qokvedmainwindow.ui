@@ -6,23 +6,51 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
-    <height>486</height>
+    <width>549</width>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>QOkved</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QTableView" name="razdelsView">
+   <widget class="QSplitter" name="splitter_2">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>301</width>
-      <height>421</height>
+      <width>551</width>
+      <height>461</height>
      </rect>
     </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QTableView" name="razdelsView">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="showGrid">
+       <bool>false</bool>
+      </property>
+      <attribute name="horizontalHeaderMinimumSectionSize">
+       <number>100</number>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+     </widget>
+     <widget class="QTableView" name="tableView"/>
+    </widget>
+    <widget class="QPlainTextEdit" name="ViewCaption">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -30,22 +58,34 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>681</width>
-     <height>26</height>
+     <width>549</width>
+     <height>25</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>razdelsView</sender>
+   <signal>pressed(QModelIndex)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>okved_list_update(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>274</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>okved_list_update(QModelIndex)</slot>
+ </slots>
 </ui>

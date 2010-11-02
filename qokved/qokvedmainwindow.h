@@ -19,8 +19,9 @@ public:
 private:
     Ui::QOkvedMainWindow *ui;
     Libqokved* qokved;
-//public slots:
 
+public slots:
+    void okved_list_update(QModelIndex index);
 };
 
 #endif // QOKVEDMAINWINDOW_H
