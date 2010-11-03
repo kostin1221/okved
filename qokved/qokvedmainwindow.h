@@ -22,6 +22,7 @@ private:
 
 public slots:
     void okved_list_update(const QModelIndex index);
+    void okved_row_changed(const QModelIndex index, const QModelIndex old);
 };
 
 #endif // QOKVEDMAINWINDOW_H

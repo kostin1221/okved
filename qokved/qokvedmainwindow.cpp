@@ -14,7 +14,7 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 qDebug() <<QDir::homePath ();
     qokved->setDbPath(QDir::homePath () + "/okved.db");
 
-    qokved->fill_db_from_zakon(QDir::homePath () + "/okved2.txt");
+    qokved->fill_db_from_zakon(QDir::homePath () + "/okved.txt");
 
 /*    QList<Razdel> razdel_list = qokved->razdels_list();
 
@@ -34,6 +34,7 @@ qDebug() <<QDir::homePath ();
 
     //currentRowChanged ( const QModelIndex & current, const QModelIndex & previous )
     connect(ui->razdelsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(okved_list_update(const QModelIndex &)));
+//    connect(ui->okvedsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(okved_row_changed(const QModelIndex &, const QModelIndex & )));
 
    // ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
    // ui->razdelsView->setColumnWidth ( 1,  ui->razdelsView->width() );
@@ -51,6 +52,17 @@ void QOkvedMainWindow::okved_list_update(const QModelIndex index)
    // ui->okvedsView->hideColumn(3);
     //ui->okvedsView->hideColumn(4);
     //  qDebug() << ui->razdelsView->model()->itemData(index).values()[0].toString();
+
+    connect(ui->okvedsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(okved_row_changed(const QModelIndex &, const QModelIndex & )));
+
+}
+
+void QOkvedMainWindow::okved_row_changed(const QModelIndex index, const QModelIndex old)
+{
+    QAbstractItemModel *model = ui->okvedsView->model();
+    QString text = model->itemData(model->index(index.row(), 3)).values()[0].toString();
+    if (text.isEmpty()) text = QString::fromUtf8("Без описания");
+    ui->additionView->setPlainText (text);
 
 }
 

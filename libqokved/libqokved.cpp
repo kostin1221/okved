@@ -58,7 +58,15 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     QSqlTableModel *model = new QSqlTableModel;
     model->setTable("okveds");
   //  qDebug() << "razdel_id="+QString::number(rid);
-    model->setFilter("razdel_id="+QString::number(rid));
+    QString filter = "razdel_id="+QString::number(rid);
+
+    QSqlQuery query("SELECT rid FROM razdelz WHERE father="+QString::number(rid));
+    while (query.next()) {
+        QString rid2 = query.value(0).toString();
+        qDebug() << rid2;
+        filter.append(" OR razdel_id="+rid2);
+    }
+    model->setFilter(filter);
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Оквед"));
@@ -101,10 +109,9 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         //    if (prilozhenie) break;
            // if ( i> 3000 ) continue;
             QString line_str = lines.at(o).simplified();
-            //QString line_str = QString::fromUtf8(line.data()).simplified();
-            QString old_line_str = line_str;
-            line_str.replace("  ", " ");
-            while (old_line_str != line_str) { line_str.replace("  ", " "); };
+            while (line_str.contains("  ")) {
+                line_str = line_str.replace("  ", " ");
+            };
 
             if (line_str.isEmpty()) continue;
 
@@ -128,13 +135,15 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 last_podrazdel = 0;
     
             } else if (line_str.startsWith(QString::fromUtf8("Подраздел "))){
-                qDebug() << pordazdel_str;
+
                 pordazdel_str.clear();
 
                 podrazdel_info = true;
                 QSqlQuery query;
                 query.prepare("INSERT INTO razdelz (name, father) "
                                    "VALUES (:name, :father)");
+
+                if (!lines[o+1].simplified().isEmpty()) line_str + lines[o+1].simplified();
                 query.bindValue(":name", line_str);
                 query.bindValue(":father", last_razdel);
                 query.exec();
@@ -175,12 +184,22 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 //                    add_str.clear();
 //                    add_info = false;
 //                } else {query.bindValue(":addition", "");}
-query.bindValue(":addition", "");
 
-                QString aa = prilozhenie_a.right(prilozhenie_a.count() - prilozhenie_a.indexOf(okved_number));
-                qDebug() << aa.indexOf(QRegExp("[0-9]{1,2}|РАЗДЕЛ|Подраздел"));
-                QString ab = aa.left(aa.indexOf(QRegExp("(?:^[0-9]{1,2}|РАЗДЕЛ |Подраздел )")));
-                qDebug() << ab;
+                QString ab;
+                if (prilozhenie_a.contains(okved_number+" ")){
+                    QString aa = prilozhenie_a.right(prilozhenie_a.count() - prilozhenie_a.indexOf(okved_number+" "));
+
+                    ab = aa.left(aa.indexOf(QRegExp(QString::fromUtf8("(?:\n[0-9]{1,2}|РАЗДЕЛ |Подраздел )")), aa.indexOf(" ")));
+
+                    while (ab.contains("  ")) {
+                        ab = ab.replace("  ", " ");
+                    };
+
+                    query.bindValue(":addition", ab);
+                } else query.bindValue(":addition", "");
+
+                if (ab == okved_number + " " +id_str) query.bindValue(":addition", "");
+
                 query.exec();
 
                 okved_number = line_str.left(prob_index);
