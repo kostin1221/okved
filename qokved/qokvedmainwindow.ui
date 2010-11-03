@@ -6,60 +6,87 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>549</width>
-    <height>529</height>
+    <width>542</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>QOkved</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QSplitter" name="splitter_2">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>551</width>
-      <height>461</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QTableView" name="razdelsView">
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QSplitter" name="splitter_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="showGrid">
-       <bool>false</bool>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-      <attribute name="horizontalHeaderMinimumSectionSize">
-       <number>100</number>
-      </attribute>
-      <attribute name="verticalHeaderVisible">
-       <bool>false</bool>
-      </attribute>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QTableView" name="razdelsView">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <property name="showGrid">
+         <bool>false</bool>
+        </property>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>100</number>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>100</number>
+        </attribute>
+       </widget>
+       <widget class="QTableView" name="okvedsView">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QPlainTextEdit" name="ViewCaption">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
-     <widget class="QTableView" name="tableView"/>
-    </widget>
-    <widget class="QPlainTextEdit" name="ViewCaption">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>549</width>
-     <height>25</height>
+     <width>542</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -67,24 +94,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections>
-  <connection>
-   <sender>razdelsView</sender>
-   <signal>pressed(QModelIndex)</signal>
-   <receiver>QOkvedMainWindow</receiver>
-   <slot>okved_list_update(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>133</x>
-     <y>179</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>274</x>
-     <y>264</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>okved_list_update(QModelIndex)</slot>
  </slots>

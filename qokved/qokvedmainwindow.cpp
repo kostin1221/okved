@@ -10,13 +10,11 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
-
     qokved = new Libqokved();
+qDebug() <<QDir::homePath ();
+    qokved->setDbPath(QDir::homePath () + "/okved.db");
 
-    qokved->setDbPath("/home/dimon/okved.db");
-
-  //  qokved->fill_db_from_zakon("/home/dimon/okved.txt");
+    qokved->fill_db_from_zakon(QDir::homePath () + "/okved2.txt");
 
 /*    QList<Razdel> razdel_list = qokved->razdels_list();
 
@@ -28,13 +26,32 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 */
 
     ui->razdelsView->setModel(qokved->razdels_model());
-    ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
+    ui->razdelsView->hideColumn(0);
+
+    ui->okvedsView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    QHeaderView* hw = ui->razdelsView->horizontalHeader();
+    hw->setResizeMode(QHeaderView::Stretch );
+
+    //currentRowChanged ( const QModelIndex & current, const QModelIndex & previous )
+    connect(ui->razdelsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(okved_list_update(const QModelIndex &)));
+
+   // ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
+   // ui->razdelsView->setColumnWidth ( 1,  ui->razdelsView->width() );
 
 }
 
-void QOkvedMainWindow::okved_list_update(QModelIndex index)
+void QOkvedMainWindow::okved_list_update(const QModelIndex index)
 {
-    qDebug() << "clicked";
+    QAbstractItemModel *model = ui->razdelsView->model();
+
+    ui->okvedsView->setModel(qokved->okveds_model(model->itemData(model->index(index.row(), 0)).values()[0].toInt()));
+
+    ui->okvedsView->hideColumn(0);
+   // ui->okvedsView->hideColumn(2);
+   // ui->okvedsView->hideColumn(3);
+    //ui->okvedsView->hideColumn(4);
+    //  qDebug() << ui->razdelsView->model()->itemData(index).values()[0].toString();
+
 }
 
 QOkvedMainWindow::~QOkvedMainWindow()

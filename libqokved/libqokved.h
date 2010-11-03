@@ -25,7 +25,7 @@ public:
     void create_tables();
     void fill_db_from_zakon(QString zakon);
     QSqlTableModel* razdels_model();
-    QList<Okved> okved_in_razdel_list(int razdel);
+    QSqlTableModel* okveds_model(int rid);
 
 private:
     QSqlDatabase db;

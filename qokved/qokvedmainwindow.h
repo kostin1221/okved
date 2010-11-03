@@ -21,7 +21,7 @@ private:
     Libqokved* qokved;
 
 public slots:
-    void okved_list_update(QModelIndex index);
+    void okved_list_update(const QModelIndex index);
 };
 
 #endif // QOKVEDMAINWINDOW_H

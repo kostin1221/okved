@@ -31,7 +31,7 @@ void Libqokved::create_tables()
     QSqlQuery query;
     if (!query.exec("CREATE TABLE razdelz (\"rid\" INTEGER PRIMARY KEY, \"name\" TEXT, \"caption\" TEXT, \"father\" INTEGER)"))
       qDebug() << query.lastError();
-    if (!query.exec("CREATE TABLE okveds (\"oid\" INTEGER PRIMARY KEY, \"name\" TEXT, \"number\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"))
+    if (!query.exec("CREATE TABLE okveds (\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"))
       qDebug() << query.lastError();
 }
 
@@ -41,28 +41,34 @@ QSqlTableModel* Libqokved::razdels_model()
     model->setTable("razdelz");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
-    model->removeColumn(0);
-    model->removeColumn(1);
-    model->removeColumn(1);
-    model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("Раздел"));
+   // model->removeColumn(0);
+    model->removeColumn(2);
+    model->removeColumn(2);
+
+    model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
+    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
 
     return model;
     //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
 
 }
 
-QList<Okved> Libqokved::okved_in_razdel_list(int razdel)
+QSqlTableModel* Libqokved::okveds_model(int rid)
 {
-    QSqlQuery query("SELECT oid, name, addition FROM okveds WHERE razdel_id=");
-    QList<Okved> okved_list;
-    while (query.next()) {
-        Okved okved;
-     //  okved.rid = query.value(0).toInt();
-     //   okved.name = query.value(1).toString();
-        okved_list.append(okved);
+    QSqlTableModel *model = new QSqlTableModel;
+    model->setTable("okveds");
+  //  qDebug() << "razdel_id="+QString::number(rid);
+    model->setFilter("razdel_id="+QString::number(rid));
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->select();
+    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Оквед"));
 
-    }
-    return okved_list;
+    //model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
+  //  model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
+
+    return model;
+    //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+
 }
 
 void Libqokved::fill_db_from_zakon(QString zakon)
@@ -71,6 +77,11 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         QFile file(zakon);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
     
+        QString data = QString::fromUtf8(file.readAll().data());
+
+        QString osn_text = data.split(QString::fromUtf8("Приложение А")).at(0);
+        QString prilozhenie_a = data.split(QString::fromUtf8("Приложение А")).at(1);
+
         int i = 0;
         int last_razdel = 0;
         int last_podrazdel = 0;
@@ -84,11 +95,13 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         bool add_info=false;
         bool podrazdel_info=false;
 
-        while (!file.atEnd()) {
-            if (prilozhenie) break;
+        QStringList lines = osn_text.split("\n");
+        for (int o = 0; o < lines.size(); ++o) {
+      //  while (!file.atEnd()) {
+        //    if (prilozhenie) break;
            // if ( i> 3000 ) continue;
-            QByteArray line = file.readLine();
-            QString line_str = QString::fromUtf8(line.data()).simplified();
+            QString line_str = lines.at(o).simplified();
+            //QString line_str = QString::fromUtf8(line.data()).simplified();
             QString old_line_str = line_str;
             line_str.replace("  ", " ");
             while (old_line_str != line_str) { line_str.replace("  ", " "); };
@@ -147,7 +160,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 
                 podrazdel_info = false;
                 QSqlQuery query;
-                query.prepare("INSERT INTO okveds (name, addition, razdel_id) "
+                query.prepare("INSERT INTO okveds (number, name, addition, razdel_id) "
                               "VALUES (:number, :name, :addition, :razdel_id)");
                 query.bindValue(":number", okved_number);
                 query.bindValue(":name", id_str);
@@ -156,13 +169,18 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                     query.bindValue(":razdel_id", last_podrazdel);
                 } else query.bindValue(":razdel_id", last_razdel);
 
-                if (add_info){
-                 //   qDebug() << "dop razdel: " << add_str;
-                    query.bindValue(":addition", add_str);
-                    add_str.clear();
-                    add_info = false;
-                } else {query.bindValue(":addition", "");}
+//                if (add_info){
+//                 //   qDebug() << "dop razdel: " << add_str;
+//                    query.bindValue(":addition", add_str);
+//                    add_str.clear();
+//                    add_info = false;
+//                } else {query.bindValue(":addition", "");}
+query.bindValue(":addition", "");
 
+                QString aa = prilozhenie_a.right(prilozhenie_a.count() - prilozhenie_a.indexOf(okved_number));
+                qDebug() << aa.indexOf(QRegExp("[0-9]{1,2}|РАЗДЕЛ|Подраздел"));
+                QString ab = aa.left(aa.indexOf(QRegExp("(?:^[0-9]{1,2}|РАЗДЕЛ |Подраздел )")));
+                qDebug() << ab;
                 query.exec();
 
                 okved_number = line_str.left(prob_index);
