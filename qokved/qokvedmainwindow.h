@@ -28,7 +28,6 @@ public slots:
     void razdels_row_changed();
     void additionUpdate();
     void razdels_update();
-    void additionTextChanged();
 
     void action_copy_text();
     void action_copy_table();

@@ -122,26 +122,6 @@ void QOkvedMainWindow::additionUpdate()
     }
 }
 
-void QOkvedMainWindow::additionTextChanged()
-{
-//    if (ui->additionView->hasFocus())
-//    {
-//        qDebug() << "focus";
-//        QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
-//        QModelIndex sel_mod = ui->okvedsView->selectionModel()->currentIndex();
-//        int row = sel_mod.row();
-//        QString text = ui->additionView->toPlainText();
-//        //model->setItemData()
-//        qDebug() << model->setData(model->index(row, 3), text);
-//        ui->okvedsView->selectionModel()->setCurrentIndex(sel_mod, QItemSelectionModel::SelectCurrent);
-//       // ui->okvedsView->selectionModel()->select(sel_mod, QItemSelectionModel::SelectCurrent);
-//    }
-  //  model->setData(model->index(row, 2), text);
-    //qDebug () << text;
-    //ui->filterEdit->text()
-
-}
-
 bool QOkvedMainWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::FocusOut)
@@ -221,9 +201,25 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
     {
         if (selectedItem->text() == QString::fromUtf8("Удалить позицию"))
         {
-            QModelIndex sel_mod = table_view->selectionModel()->currentIndex();
-            int row = sel_mod.row();
-            table_view->model()->removeRow(row);
+            if (table_view->objectName() == "razdelsView")
+            {
+                int row = ui->razdelsView->selectionModel()->currentIndex().row();
+                if (row > -1){
+                    QAbstractItemModel *model = ui->razdelsView->model();
+                    QSqlTableModel *model_okved = qokved->okveds_model(model->data(model->index(row, 0)).toInt(), "");
+                    qDebug() <<  model_okved->rowCount();
+                 //   for(int i = 0; i < model_okved->rowCount(); i++)
+                  //  {
+                        model_okved->removeRows(0, model_okved->rowCount());
+                  //  }
+                    model_okved->submitAll();
+                    qDebug() <<  model_okved->rowCount();
+                qDebug() << "123";
+                }
+            }
+//            QModelIndex sel_mod = table_view->selectionModel()->currentIndex();
+//            int row = sel_mod.row();
+//            table_view->model()->removeRow(row);
         }
 
     }
