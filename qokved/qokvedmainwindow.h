@@ -19,10 +19,21 @@ public:
 private:
     Ui::QOkvedMainWindow *ui;
     Libqokved* qokved;
+    bool eventFilter(QObject *object, QEvent *event);
+
+    QString m_addition_text;
+    QString appDir;
 
 public slots:
-    void okved_list_update(const QModelIndex index);
-    void okved_row_changed(const QModelIndex index, const QModelIndex old);
+    void razdels_row_changed();
+    void additionUpdate();
+    void razdels_update();
+    void additionTextChanged();
+
+    void action_copy_text();
+    void action_copy_table();
+    void action_oocalc();
+    void tablePopup(const QPoint & pos);
 };
 
 #endif // QOKVEDMAINWINDOW_H

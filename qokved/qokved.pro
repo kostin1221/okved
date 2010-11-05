@@ -12,14 +12,20 @@ TEMPLATE = app
 INCLUDEPATH += ../libqokved
 
 SOURCES += main.cpp\
-        qokvedmainwindow.cpp
+        qokvedmainwindow.cpp \
+    addokveddialog.cpp
 
-HEADERS  += qokvedmainwindow.h
+HEADERS  += qokvedmainwindow.h \
+    addokveddialog.h
 
-FORMS    += qokvedmainwindow.ui
+FORMS    += qokvedmainwindow.ui \
+    addokveddialog.ui
 
 TARGET = ../bin/qokved
 
-LIBS += ../libqokved/libqokved.a
+LIBS += ../libqokved/libqokved.a 
+LIBS += -lsqlite3
 PRE_TARGETDEPS += ../libqokved/libqokved.a
 
+RESOURCES += \
+    qokved.qrc

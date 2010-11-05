@@ -1,5 +1,6 @@
 #include "libqokved.h"
 
+#include <sqlite3.h>
 
 Libqokved::Libqokved()
 {
@@ -22,10 +23,33 @@ bool Libqokved::setDbPath(QString db_path)
         qDebug() << db.lastError().text();
         return false;
     }
+
+    QVariant v = db.driver()->handle();
+    if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0) {
+        // v.data() returns a pointer to the handle
+        sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+        char *zErrMsg = 0;
+
+        if (handle != 0) { // check that it is not NULL
+            int res = sqlite3_enable_load_extension(handle,1);
+            if (res == SQLITE_OK)
+            {
+                res = sqlite3_load_extension(handle,QDir::currentPath().toUtf8()+"/libSqliteIcu.so",0,&zErrMsg);
+                if (res == SQLITE_OK)
+                   ;
+                else
+                    fprintf(stderr, "Error loading SqliteIcu: %s\n", zErrMsg);
+            }
+            else
+                   qDebug() << "Sqlite3 enable load extension fail";
+        }
+    }
+
     if ( !db.tables().contains("razdelz") ) create_tables();
     return true;
 }
 
+//Создает таблицы в новой базе данных
 void Libqokved::create_tables()
 { 
     QSqlQuery query;
@@ -39,11 +63,12 @@ QSqlTableModel* Libqokved::razdels_model()
 {
     QSqlTableModel *model = new QSqlTableModel;
     model->setTable("razdelz");
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
    // model->removeColumn(0);
-    model->removeColumn(2);
-    model->removeColumn(2);
+  //  model->insertRow(0);
+   // model->removeColumn(2);
+    //model->removeColumn(2);
 
     model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
@@ -53,23 +78,38 @@ QSqlTableModel* Libqokved::razdels_model()
 
 }
 
-QSqlTableModel* Libqokved::okveds_model(int rid)
+QSqlTableModel* Libqokved::okveds_model(int rid, QString add_filter)
 {
     QSqlTableModel *model = new QSqlTableModel;
     model->setTable("okveds");
-  //  qDebug() << "razdel_id="+QString::number(rid);
-    QString filter = "razdel_id="+QString::number(rid);
 
-    QSqlQuery query("SELECT rid FROM razdelz WHERE father="+QString::number(rid));
-    while (query.next()) {
-        QString rid2 = query.value(0).toString();
-        qDebug() << rid2;
-        filter.append(" OR razdel_id="+rid2);
+    QString filter;
+    if (rid != 1) {
+        filter = "(razdel_id="+QString::number(rid);
+
+        QSqlQuery query("SELECT rid FROM razdelz WHERE father="+QString::number(rid));
+        while (query.next()) {
+            QString rid2 = query.value(0).toString();
+
+            filter.append(" OR razdel_id="+rid2);
+        }
+        filter.append(")");
+    } else filter.clear();
+
+    if (!add_filter.isEmpty()) {
+        if (add_filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
+            if (!filter.isEmpty()) filter.append(" AND");
+            filter.append(" name LIKE '%" + add_filter + "%'");
+        } else filter.append(" AND number LIKE '" + add_filter + "%'");
+
     }
+
     model->setFilter(filter);
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
-    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Оквед"));
+    model->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
+    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
+    model->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
 
     //model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
   //  model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
@@ -82,13 +122,8 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
 void Libqokved::fill_db_from_zakon(QString zakon)
 {
 
-        QFile file(zakon);
-        file.open(QIODevice::ReadOnly | QIODevice::Text);
-    
-        QString data = QString::fromUtf8(file.readAll().data());
-
-        QString osn_text = data.split(QString::fromUtf8("Приложение А")).at(0);
-        QString prilozhenie_a = data.split(QString::fromUtf8("Приложение А")).at(1);
+        QString osn_text = zakon.split(QString::fromUtf8("Приложение А")).at(0);
+        QString prilozhenie_a = zakon.split(QString::fromUtf8("Приложение А")).at(1);
 
         int i = 0;
         int last_razdel = 0;
@@ -102,6 +137,12 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         bool skobki=false;
         bool add_info=false;
         bool podrazdel_info=false;
+
+        QSqlQuery query;
+        query.prepare("INSERT INTO razdelz (name, father) "
+                           "VALUES (:name, 9999)");
+        query.bindValue(":name", QString::fromUtf8("Все разделы"));
+        query.exec();
 
         QStringList lines = osn_text.split("\n");
         for (int o = 0; o < lines.size(); ++o) {
@@ -144,6 +185,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                                    "VALUES (:name, :father)");
 
                 if (!lines[o+1].simplified().isEmpty()) line_str + lines[o+1].simplified();
+
                 query.bindValue(":name", line_str);
                 query.bindValue(":father", last_razdel);
                 query.exec();
@@ -198,7 +240,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                     query.bindValue(":addition", ab);
                 } else query.bindValue(":addition", "");
 
-                if (ab == okved_number + " " +id_str) query.bindValue(":addition", "");
+                if (ab == okved_number + " " +id_str.replace("\n", "")) query.bindValue(":addition", "");
 
                 query.exec();
 

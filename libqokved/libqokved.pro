@@ -12,8 +12,12 @@ TARGET = libqokved
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += libqokved.cpp
+SOURCES += libqokved.cpp \
+    odtwriter.cpp
 
-HEADERS += libqokved.h
+HEADERS += libqokved.h \
+    odtwriter.h
 
 TARGET = qokved
+
+LIBS += -lsqlite3 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>542</width>
-    <height>432</height>
+    <width>634</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,64 +20,84 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
      <widget class="QSplitter" name="splitter_2">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QTableView" name="razdelsView">
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
        </property>
-       <widget class="QTableView" name="razdelsView">
-        <property name="editTriggers">
-         <set>QAbstractItemView::NoEditTriggers</set>
-        </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::SingleSelection</enum>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectRows</enum>
-        </property>
-        <property name="showGrid">
-         <bool>false</bool>
-        </property>
-        <attribute name="horizontalHeaderMinimumSectionSize">
-         <number>100</number>
-        </attribute>
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-       </widget>
-       <widget class="QTableView" name="okvedsView">
-        <property name="editTriggers">
-         <set>QAbstractItemView::NoEditTriggers</set>
-        </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::SingleSelection</enum>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectRows</enum>
-        </property>
-        <property name="showGrid">
-         <bool>false</bool>
-        </property>
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-       </widget>
+       <property name="editTriggers">
+        <set>QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <property name="showGrid">
+        <bool>false</bool>
+       </property>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>100</number>
+       </attribute>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
       </widget>
-      <widget class="QPlainTextEdit" name="additionView">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Фильтр:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="filterEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QTableView" name="okvedsView">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked</set>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="showGrid">
+            <bool>false</bool>
+           </property>
+           <attribute name="verticalHeaderVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+          <widget class="QPlainTextEdit" name="additionView">
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -88,17 +108,159 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>542</width>
-     <height>25</height>
+     <width>634</width>
+     <height>20</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Экспортировать список</string>
+    </property>
+    <addaction name="action_table"/>
+    <addaction name="action_copy_text"/>
+    <addaction name="action_oocalc"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_table">
+   <property name="text">
+    <string>Скопировать в виде таблицы</string>
+   </property>
+  </action>
+  <action name="action_copy_text">
+   <property name="text">
+    <string>Скопировать в виде текста</string>
+   </property>
+  </action>
+  <action name="action_oocalc">
+   <property name="text">
+    <string>Экспортировать в OpenOffice Calc</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>filterEdit</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>razdels_row_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>475</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>302</x>
+     <y>218</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>additionView</sender>
+   <signal>textChanged()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>additionTextChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>473</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_copy_text</sender>
+   <signal>triggered()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>action_copy_text()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_table</sender>
+   <signal>triggered()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>action_copy_table()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_oocalc</sender>
+   <signal>triggered()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>action_oocalc()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>okvedsView</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>tablePopup(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>473</x>
+     <y>148</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>razdelsView</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>tablePopup(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>158</x>
+     <y>232</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
-  <slot>okved_list_update(QModelIndex)</slot>
+  <slot>additionTextChanged()</slot>
+  <slot>razdels_row_changed()</slot>
+  <slot>action_copy_text()</slot>
+  <slot>action_copy_table()</slot>
+  <slot>action_oocalc()</slot>
+  <slot>tablePopup(QPoint)</slot>
  </slots>
 </ui>
