@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QTextOStream>
+#include <QMessageBox>
 
 
 OdtWriter::OdtWriter(QObject *parent) :
@@ -21,16 +22,13 @@ bool OdtWriter::open( const QString &fname )
 
         copyName = QString(temp+"/%1").arg(QDateTime::currentDateTime().toTime_t());
         copyName = QDir::convertSeparators(copyName);
-        qDebug() << tr("aOOTemplate temporary directory is %1").arg(copyName);
-//	printf("copy name = %s\n",copyName.ascii());
+
         if(!dir.mkdir(copyName))
         {
-                qDebug() <<  tr("aOOTemplate create temporary directory %1").arg(copyName);
+            int ret = QMessageBox::error(this, "QOkved",
+                                           QString::fromUtf8("Невозможно создать временный каталог"),
+                                           QMessageBox::Ok);
                 return false;
-        }
-        else
-        {
-                qDebug() <<  tr("aOOTemplate create temporary directory %1").arg(copyName);
         }
 
         QProcess *process = new QProcess(this);
@@ -44,13 +42,13 @@ bool OdtWriter::open( const QString &fname )
 #endif
         if (!process->waitForFinished())
         {
-                qDebug() <<  tr("aOOTemplate unzip dead");
+                qDebug() <<  tr("unzip dead");
                 return false;
         }
 
         if( process->exitStatus() != QProcess::NormalExit )
         {
-                qDebug() <<  tr("unzip dead2");
+                qDebug() <<  tr("unzip dead");
                 return false;
         }
         else
@@ -93,10 +91,6 @@ bool OdtWriter::writeTable(QMap<QString, QString> table)
 
 bool OdtWriter::save( const QString & fname )
 {
-
-        qDebug() << tr("aOOTemplate save working dir =%1").arg(QDir::currentPath());
-
-
         QProcess *process = new QProcess(this);
         process->setWorkingDirectory(copyName);
 
@@ -119,7 +113,6 @@ bool OdtWriter::startOO( const QString & fname )
 {
 
     QProcess *process = new QProcess(this);
-    //process->setWorkingDirectory ( templateDir);
 
     process->start(QString("ooffice"), QStringList() << fname);
     return true;
