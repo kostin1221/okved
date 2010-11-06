@@ -98,17 +98,24 @@ QSqlTableModel* Libqokved::okveds_model(int rid, QString add_filter)
         filter.append(")");
     } else filter.clear();
 
+//    if (!add_filter.isEmpty()) {
+//        if (add_filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
+//            if (!filter.isEmpty()) filter.append(" AND");
+//            filter.append(" name LIKE '%" + add_filter + "%'");
+//        } else filter.append(" AND number LIKE '" + add_filter + "%'");
+//    }
+
+    model->setFilter(filter);
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
+    model->select();
+
     if (!add_filter.isEmpty()) {
         if (add_filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
             if (!filter.isEmpty()) filter.append(" AND");
             filter.append(" name LIKE '%" + add_filter + "%'");
         } else filter.append(" AND number LIKE '" + add_filter + "%'");
-
     }
 
-    model->setFilter(filter);
-    model->setEditStrategy(QSqlTableModel::OnFieldChange);
-    model->select();
     model->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
     model->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));

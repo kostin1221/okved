@@ -281,11 +281,6 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
         }
 
     }
-    else
-    {
-        // nothing was chosen
-    }
-
 }
 
 void QOkvedMainWindow::addNewOkved(QString rid, QString number, QString name, QString caption)
@@ -349,11 +344,9 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
         }
         if (selectedItem->text() == QString::fromUtf8("Добавить ОКВЭД"))
         {
-
                 int row = ui->razdelsView->selectionModel()->currentIndex().row();
                 AddOkvedDialog *dialog = new AddOkvedDialog(this);
-                //dialog.setWordCount(document().wordCount());
-                QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->razdelsView->model());
+                QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->razdelsView->model());
                 for(int i = 1; i < model->rowCount()-1; i++)
                 {
                     dialog->addRazdel(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 0)).toString());
@@ -365,11 +358,6 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
         }
 
     }
-    else
-    {
-        // nothing was chosen
-    }
-//    qDebug() << "show popup " << pos;
 }
 
 
