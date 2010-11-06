@@ -29,34 +29,74 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>80</y>
-     <width>48</width>
-     <height>14</height>
+     <x>0</x>
+     <y>10</y>
+     <width>561</width>
+     <height>121</height>
     </rect>
    </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
+   <property name="title">
+    <string>Раздел</string>
    </property>
-   <property name="text">
-    <string>Раздел;</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="comboRazdels">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>80</y>
-     <width>361</width>
-     <height>23</height>
-    </rect>
-   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetFixedSize</enum>
+        </property>
+        <item>
+         <widget class="QRadioButton" name="oldRazdelButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Существующий</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="newRazdelButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Новый</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QComboBox" name="comboRazdels"/>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="newRazdelEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
@@ -93,5 +133,40 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>oldRazdelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>AddOkvedDialog</receiver>
+   <slot>changeRazdelButtonsClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>73</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>282</x>
+     <y>216</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>newRazdelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>AddOkvedDialog</receiver>
+   <slot>changeRazdelButtonsClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>282</x>
+     <y>216</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>changeRazdelButtonsClicked()</slot>
+ </slots>
 </ui>

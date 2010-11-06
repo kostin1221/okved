@@ -25,7 +25,7 @@ bool OdtWriter::open( const QString &fname )
 
         if(!dir.mkdir(copyName))
         {
-            int ret = QMessageBox::error(this, "QOkved",
+            QMessageBox::critical(0, "QOkved",
                                            QString::fromUtf8("Невозможно создать временный каталог"),
                                            QMessageBox::Ok);
                 return false;
@@ -77,7 +77,6 @@ bool OdtWriter::writeTable(QMap<QString, QString> table)
     while (i.hasNext()) {
         i.next();
         row.append(QString("<table:table-row table:style-name=\"ro1\"><table:table-cell table:style-name=\"ce2\" office:value-type=\"string\"><text:p>%1</text:p></table:table-cell><table:table-cell table:style-name=\"ce2\" office:value-type=\"string\"><text:p>%2</text:p></table:table-cell></table:table-row>").arg(i.key()).arg(i.value()));
-        qDebug() << i.key() << ": " << i.value() << endl;
     }
 
     data.insert(data.indexOf(end_of_style) + end_of_style.count(), "<style:style style:name=\"ce2\" style:family=\"table-cell\" style:parent-style-name=\"Default\"><style:text-properties fo:font-weight=\"normal\" style:font-weight-asian=\"normal\" style:font-weight-complex=\"normal\"/></style:style>");

@@ -33,6 +33,7 @@ public slots:
     void action_copy_table();
     void action_oocalc();
     void tablePopup(const QPoint & pos);
+    void errorMessage(QString message);
 };
 
 #endif // QOKVEDMAINWINDOW_H

@@ -6,7 +6,7 @@
 
 QT       += network sql
 
-QT       -= gui
+QT       += gui
 
 TARGET = libqokved
 TEMPLATE = lib
