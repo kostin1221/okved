@@ -203,6 +203,19 @@ void QOkvedMainWindow::action_copy_table()
 
 }
 
+//Сдвигает позиции начиная прибавляет к rid ко всем позициям, начиная с row
+void QOkvedMainWindow::freeRid(int row)
+{
+    QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->razdelsView->model());
+    for(int i = model->rowCount(); i >= row; i--)  //Сдвиг всех разделов для вставки подраздела
+    {
+        QSqlRecord rec = model->record(i);
+        int rid = rec.value("rid").toInt();
+        rec.setValue("rid", rid+1);
+        model->setRecord(i, rec);
+    }
+}
+
 void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
 {
     QMenu myMenu;
@@ -250,13 +263,7 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
                 if (selectedItem->text() == QString::fromUtf8("Создать подраздел"))
                 {
                     QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->razdelsView->model());
-                    for(int i = model->rowCount(); i > row; i--)  //Сдвиг всех разделов для вставки подраздела
-                    {
-                        QSqlRecord rec = model->record(i);
-                        int rid = rec.value("rid").toInt();
-                        rec.setValue("rid", rid+1);
-                        model->setRecord(i, rec);
-                    }
+                    freeRid(row+1);
                     QSqlField rid_field("rid", QVariant::Int);
                     rid_field.setValue(model->record(row).value("rid").toInt()+1);
                     record.append(rid_field);
@@ -281,80 +288,80 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
 
 }
 
+void QOkvedMainWindow::addNewOkved(QString rid, QString number, QString name, QString caption)
+{
+    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+    //(\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"
+
+    QSqlRecord record;
+    QSqlField field_name("name", QVariant::String);
+    field_name.setValue(name);
+    record.append(field_name);
+
+    QSqlField field_num("number", QVariant::String);
+    field_num.setValue(number);
+    record.append(field_num);
+
+    QSqlField field_cap("addition", QVariant::String);
+    field_cap.setValue(caption);
+    record.append(field_cap);
+
+    QSqlField field_rid("razdel_id", QVariant::Int);
+    field_rid.setValue(rid.toInt());
+    record.append(field_rid);
+
+    model->insertRecord(-1, record);
+
+}
+
 void QOkvedMainWindow::tablePopup(const QPoint & pos)
 {
-    // for most widgets
-    QTableView* table_view = static_cast<QTableView*>(sender());
-    QPoint globalPos = table_view->mapToGlobal(pos);
+
+    QPoint globalPos = ui->okvedsView->mapToGlobal(pos);
     // for QAbstractScrollArea and derived classes you would use:
     // QPoint globalPos = myWidget->viewport()->mapToGlobal(pos);
-    QModelIndex sel_mod = table_view->selectionModel()->currentIndex();
+    QModelIndex sel_mod = ui->okvedsView->selectionModel()->currentIndex();
     int row = sel_mod.row();
 
     QMenu myMenu;
-    if (table_view->objectName() == "razdelsView")
-    {
-        QSqlTableModel *model =  static_cast<QSqlTableModel*>(table_view->model());
-        if (model->data(model->index(row, 3)).toString() == "0" )
-         myMenu.addAction(QString::fromUtf8("Создать подраздел"));
-         qDebug() << model->data(model->index(row, 3)).toString();
-        myMenu.addAction(QString::fromUtf8("Создать раздел"));
-    }
-    myMenu.addAction(QString::fromUtf8("Добавить позицию"));
-    myMenu.addAction(QString::fromUtf8("Удалить позицию"));
+    myMenu.addAction(QString::fromUtf8("Добавить ОКВЭД"));
+    myMenu.addAction(QString::fromUtf8("Удалить ОКВЭД"));
     // ...
 
     QAction* selectedItem = myMenu.exec(globalPos);
     if (selectedItem)
     {
-        if (selectedItem->text() == QString::fromUtf8("Удалить позицию"))
+        if (selectedItem->text() == QString::fromUtf8("Удалить ОКВЭД"))
         {
             if (row > -1)
             {
-                if (table_view->objectName() == "razdelsView")
-                {
-                    //удаление всех оквэдов, относящихся к разделу
-                    if (row == 0) return; //Если "все разделы"
-                    QAbstractItemModel *model = ui->razdelsView->model();
-                    QSqlTableModel *model_okved = qokved->okveds_model(model->data(model->index(row, 0)).toInt(), "");
-                    model_okved->removeRows(0, model_okved->rowCount());
-                    table_view->selectionModel()->setCurrentIndex(model->index(row-1, 1), QItemSelectionModel::SelectCurrent);
 
-                    model->removeRow(row);//Удаление самого раздела
+                ui->okvedsView->model()->removeRow(row);
+                int new_row;
+                if (row == 0) {
+                    new_row = 1;
+                } else {
+                    new_row = row -1;
                 }
-                else {
-                    table_view->model()->removeRow(row);
-                    int new_row;
-                    if (row == 0) {
-                        new_row = 1;
-                    } else {
-                        new_row = row -1;
-                    }
-                     table_view->selectionModel()->setCurrentIndex(table_view->model()->index(new_row, 2), QItemSelectionModel::SelectCurrent);
-                }
+                 ui->okvedsView->selectionModel()->setCurrentIndex(ui->okvedsView->model()->index(new_row, 2), QItemSelectionModel::SelectCurrent);
 
-            }
+             }
         }
-        if (selectedItem->text() == QString::fromUtf8("Добавить позицию"))
+        if (selectedItem->text() == QString::fromUtf8("Добавить ОКВЭД"))
         {
-            if (table_view->objectName() == "razdelsView")
-            {
-                QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->razdelsView->model());
-               // model->insertRecord(-1, )
-            } else {
+
                 int row = ui->razdelsView->selectionModel()->currentIndex().row();
-                AddOkvedDialog dialog(this);
+                AddOkvedDialog *dialog = new AddOkvedDialog(this);
                 //dialog.setWordCount(document().wordCount());
                 QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->razdelsView->model());
                 for(int i = 1; i < model->rowCount()-1; i++)
                 {
-                    dialog.addRazdel(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 0)).toString());
-                    //table.insert(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 2)).toString());
+                    dialog->addRazdel(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 0)).toString());
                 }
                 if (row > 0)
-                    dialog.setActiveRazdel(model->data(model->index(row, 0)).toString());
-                qDebug() << dialog.exec();
-            }
+                    dialog->setActiveRazdel(model->data(model->index(row, 0)).toString());
+                connect(dialog, SIGNAL(addNewOkved(QString, QString, QString, QString)), this, SLOT(addNewOkved(QString, QString, QString, QString)));
+                dialog->exec();
         }
 
     }

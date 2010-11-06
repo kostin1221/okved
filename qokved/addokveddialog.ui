@@ -52,7 +52,7 @@
     <string>Раздел</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="lineNumber">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -62,7 +62,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_2">
+  <widget class="QLineEdit" name="lineName">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -111,7 +111,7 @@
     <string>Дополнительное описание</string>
    </property>
   </widget>
-  <widget class="QPlainTextEdit" name="plainTextEdit">
+  <widget class="QPlainTextEdit" name="plainCaption">
    <property name="geometry">
     <rect>
      <x>40</x>

@@ -16,8 +16,9 @@ AddOkvedDialog::~AddOkvedDialog()
 
 void AddOkvedDialog::accept()
 {
-    qDebug() << "accept";
 
+    emit addNewOkved(ui->comboRazdels->itemData(ui->comboRazdels->currentIndex()).toString(), ui->lineNumber->text(), ui->lineName->text(), ui->plainCaption->toPlainText ());
+    close();
 }
 
 void AddOkvedDialog::addRazdel(QString name, QString rid)

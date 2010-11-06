@@ -24,6 +24,8 @@ private:
     QString m_addition_text;
     QString appDir;
 
+    void freeRid(int rid);
+
 public slots:
     void razdels_row_changed();
     void additionUpdate();
@@ -35,6 +37,9 @@ public slots:
     void tablePopup(const QPoint & pos);
     void razdelzTablePopup(const QPoint & pos);
     void errorMessage(QString message);
+
+    void addNewOkved(QString rid, QString number, QString name, QString caption);
+
 };
 
 #endif // QOKVEDMAINWINDOW_H
