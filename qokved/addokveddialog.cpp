@@ -29,9 +29,3 @@ void AddOkvedDialog::setActiveRazdel(QString rid)
 {
     ui->comboRazdels->setCurrentIndex(ui->comboRazdels->findData(rid));
 }
-
-void AddOkvedDialog::changeRazdelButtonsClicked()
-{
-    ui->comboRazdels->setEnabled(ui->oldRazdelButton->isChecked ());
-    ui->newRazdelEdit->setEnabled(ui->newRazdelButton->isChecked ());
-}

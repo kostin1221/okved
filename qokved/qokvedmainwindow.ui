@@ -197,8 +197,8 @@
    <slot>action_copy_table()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>231</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>316</x>
@@ -242,7 +242,7 @@
    <sender>razdelsView</sender>
    <signal>customContextMenuRequested(QPoint)</signal>
    <receiver>QOkvedMainWindow</receiver>
-   <slot>tablePopup(QPoint)</slot>
+   <slot>razdelzTablePopup(QPoint)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>158</x>
@@ -262,5 +262,6 @@
   <slot>action_copy_table()</slot>
   <slot>action_oocalc()</slot>
   <slot>tablePopup(QPoint)</slot>
+  <slot>razdelzTablePopup(QPoint)</slot>
  </slots>
 </ui>

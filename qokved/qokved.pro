@@ -4,6 +4,11 @@
 #
 #-------------------------------------------------
 
+unix {
+  isEmpty(PREFIX) {
+      PREFIX = /usr
+}}
+
 QT       += core gui sql
 
 TARGET = qokved
@@ -21,7 +26,7 @@ HEADERS  += qokvedmainwindow.h \
 FORMS    += qokvedmainwindow.ui \
     addokveddialog.ui
 
-TARGET = ../bin/qokved
+#TARGET = $$PREFIX/bin/qokved
 
 LIBS += ../libqokved/libqokved.a 
 LIBS += -lsqlite3
@@ -29,3 +34,15 @@ PRE_TARGETDEPS += ../libqokved/libqokved.a
 
 RESOURCES += \
     qokved.qrc
+
+templates.files = templates/soffice.ods
+win32 {
+    templates.path = $$PREFIX
+} else:mac {
+    templates.path = $$PREFIX
+} else {
+    templates.path = $$PREFIX/share/qokved/templates
+}
+
+INSTALLS += templates
+

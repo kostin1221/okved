@@ -23,7 +23,9 @@ private:
 
 public slots:
     void accept();
-    void changeRazdelButtonsClicked();
+
+signals:
+    void addNewOkved(QString rid, QString number, QString name, QString caption);
 };
 
 #endif // ADDOKVEDDIALOG_H

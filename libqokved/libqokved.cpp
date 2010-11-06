@@ -73,6 +73,8 @@ QSqlTableModel* Libqokved::razdels_model()
     model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
 
+    model->setSort(0, Qt::AscendingOrder); // Сортировка по id
+
     return model;
     //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
 

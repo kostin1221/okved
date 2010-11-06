@@ -9,6 +9,7 @@
 #include <QClipboard>
 #include <QTextTable>
 #include <QMessageBox>
+#include <QInputDialog>
 
 QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -199,6 +200,84 @@ void QOkvedMainWindow::action_copy_table()
 
     mime->setHtml(buffer);
     clipboard->setMimeData(mime);
+
+}
+
+void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
+{
+    QMenu myMenu;
+    QPoint globalPos = ui->razdelsView->mapToGlobal(pos);
+    QModelIndex sel_mod = ui->razdelsView->selectionModel()->currentIndex();
+    int row = sel_mod.row();
+    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->razdelsView->model());
+    if (model->data(model->index(row, 3)).toString() == "0" )
+        myMenu.addAction(QString::fromUtf8("Создать подраздел"));
+
+    myMenu.addAction(QString::fromUtf8("Создать раздел"));
+    myMenu.addAction(QString::fromUtf8("Удалить раздел"));
+
+    QAction* selectedItem = myMenu.exec(globalPos);
+    if (selectedItem)
+    {
+        if (selectedItem->text() == QString::fromUtf8("Удалить раздел"))
+        {
+            if (row > -1)
+            {
+                //удаление всех оквэдов, относящихся к разделу
+                if (row == 0) return; //Если "все разделы"
+                QAbstractItemModel *model = ui->razdelsView->model();
+                QSqlTableModel *model_okved = qokved->okveds_model(model->data(model->index(row, 0)).toInt(), "");
+                model_okved->removeRows(0, model_okved->rowCount());
+                ui->razdelsView->selectionModel()->setCurrentIndex(model->index(row-1, 1), QItemSelectionModel::SelectCurrent);
+                model->removeRow(row);//Удаление самого раздела
+
+            }
+        }
+        if (selectedItem->text() == QString::fromUtf8("Создать раздел") || selectedItem->text() == QString::fromUtf8("Создать подраздел"))
+        {
+            bool ok;
+            QString text = QInputDialog::getText(this, QString::fromUtf8("Создать (под)раздел"),
+                                                 QString::fromUtf8("Название нового (под)раздела:"), QLineEdit::Normal, "", &ok);
+            if (ok && !text.isEmpty())
+            {
+                QSqlRecord record;
+                int dist_row = -1;
+                QSqlField field("name", QVariant::String);
+                field.setValue(text);
+                record.append(field);
+                QSqlField fieldf("father", QVariant::Int);
+                fieldf.setValue(0);
+                if (selectedItem->text() == QString::fromUtf8("Создать подраздел"))
+                {
+                    QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->razdelsView->model());
+                    for(int i = model->rowCount(); i > row; i--)  //Сдвиг всех разделов для вставки подраздела
+                    {
+                        QSqlRecord rec = model->record(i);
+                        int rid = rec.value("rid").toInt();
+                        rec.setValue("rid", rid+1);
+                        model->setRecord(i, rec);
+                    }
+                    QSqlField rid_field("rid", QVariant::Int);
+                    rid_field.setValue(model->record(row).value("rid").toInt()+1);
+                    record.append(rid_field);
+
+                    fieldf.setValue(model->data(model->index(row, 0)).toInt());
+                    dist_row=row+1;
+                }
+
+                record.append(fieldf);
+                model->insertRecord(dist_row, record);
+                int index_row=model->rowCount()-1;
+                if (dist_row!=-1) index_row = dist_row;
+                ui->razdelsView->selectionModel()->setCurrentIndex(model->index(index_row, 1), QItemSelectionModel::SelectCurrent);
+            }
+        }
+
+    }
+    else
+    {
+        // nothing was chosen
+    }
 
 }
 
