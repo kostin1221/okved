@@ -29,7 +29,6 @@ FORMS    += qokvedmainwindow.ui \
 #TARGET = $$PREFIX/bin/qokved
 
 LIBS += ../libqokved/libqokved.a 
-LIBS += -lsqlite3
 PRE_TARGETDEPS += ../libqokved/libqokved.a
 
 RESOURCES += \

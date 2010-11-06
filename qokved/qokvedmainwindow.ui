@@ -129,7 +129,14 @@
     <addaction name="action_copy_text"/>
     <addaction name="action_oocalc"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Создать базу</string>
+    </property>
+    <addaction name="action_create_db_from_txt"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_table">
@@ -147,6 +154,11 @@
     <string>Экспортировать в OpenOffice Calc</string>
    </property>
   </action>
+  <action name="action_create_db_from_txt">
+   <property name="text">
+    <string>Создать из закона ОКВЭД</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
@@ -155,7 +167,7 @@
    <sender>filterEdit</sender>
    <signal>textEdited(QString)</signal>
    <receiver>QOkvedMainWindow</receiver>
-   <slot>razdels_row_changed()</slot>
+   <slot>row_filter_update()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>475</x>
@@ -263,6 +275,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_create_db_from_txt</sender>
+   <signal>triggered()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>createDbFromTxt()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>additionTextChanged()</slot>
@@ -272,5 +300,7 @@
   <slot>action_oocalc()</slot>
   <slot>tablePopup(QPoint)</slot>
   <slot>razdelzTablePopup(QPoint)</slot>
+  <slot>row_filter_update()</slot>
+  <slot>createDbFromTxt()</slot>
  </slots>
 </ui>

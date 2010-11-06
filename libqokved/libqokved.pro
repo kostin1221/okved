@@ -20,4 +20,3 @@ HEADERS += libqokved.h \
 
 TARGET = qokved
 
-LIBS += -lsqlite3 

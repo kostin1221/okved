@@ -34,12 +34,12 @@ bool OdtWriter::open( const QString &fname )
         QProcess *process = new QProcess(this);
         process->setWorkingDirectory ( templateDir);
 
-#ifndef Q_OS_WIN32
+//#ifndef Q_OS_WIN32
         process->start(QString("unzip"), QStringList() << fname << "-d" << copyName);
 
-#else
-        process->start(QString("7z"), QStringList() << "x" << "-y" << QString("-o%1").arg(copyName) << fname);
-#endif
+//#else
+//        process->start(QString("7z"), QStringList() << "x" << "-y" << QString("-o%1").arg(copyName) << fname);
+//#endif
         if (!process->waitForFinished())
         {
                 qDebug() <<  tr("unzip dead");
@@ -93,12 +93,12 @@ bool OdtWriter::save( const QString & fname )
         QProcess *process = new QProcess(this);
         process->setWorkingDirectory(copyName);
 
-#ifndef Q_OS_WIN32
+//#ifndef Q_OS_WIN32
         process->start(QString("zip"), QStringList() << "-r" << fname << ".");
 
-#else
-        process->start(QString("7z"), QStringList() << "a" << "-tzip" << fname << "-r" << .);
-#endif
+//#else
+ //       process->start(QString("7z"), QStringList() << "a" << "-tzip" << fname << "-r" << .);
+//#endif
         if (!process->waitForFinished())
         {
                 qDebug() <<  tr("zip dead");

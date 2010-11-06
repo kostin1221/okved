@@ -30,6 +30,8 @@ public slots:
     void razdels_row_changed();
     void additionUpdate();
     void razdels_update();
+    void row_filter_update();
+    void createDbFromTxt();
 
     void action_copy_text();
     void action_copy_table();

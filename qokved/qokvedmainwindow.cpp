@@ -10,6 +10,7 @@
 #include <QTextTable>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QFileDialog>
 
 QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,32 +21,34 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved();
 
-    qokved->setDbPath(QDir::currentPath() + "/okved.db");
-
-
-    QFile file(QDir::homePath () + "/okved.txt");
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    qokved->setDbPath(QDir::convertSeparators(QDir::currentPath() + "/okved.db"));
 
     #ifdef Q_WS_WIN
-        appDir = QDir::homePath() + "/Application Data/qokved";
+        appDir = QDir::convertSeparators(QDir::homePath() + "/Application Data/qokved");
     #elif defined(Q_WS_X11)
         appDir = QDir::homePath() + "/.config/qokved/";
     #endif
 
-    //QString data = QString::fromUtf8(file.readAll().data());
- //   qokved->fill_db_from_zakon(data);
-
-
-/*    QList<Razdel> razdel_list = qokved->razdels_list();
-
-    for (int i = 0; i < razdel_list.size(); ++i) {
-        Razdel razdel = razdel_list.at(i);
-        ui->razdelsView->addItem(razdel.name);
-
-    }
-*/
     razdels_update();
 
+    QSettings settings("qokved", "qokved");
+    ui->filterEdit->setText(settings.value("last_filter").toString());
+
+}
+
+void QOkvedMainWindow::createDbFromTxt()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                            QString::fromUtf8("Укажите путь к закону в txt"), QDir::homePath(), "Text Files (*.txt)");
+
+    if (!fileName.isEmpty())
+    {
+        QFile file(fileName);
+        file.open(QIODevice::ReadOnly | QIODevice::Text);
+        QString data = QString::fromUtf8(file.readAll().data());
+        qokved->fill_db_from_zakon(data);
+        razdels_update();
+    }
 }
 
 void QOkvedMainWindow::errorMessage(QString message)
@@ -58,11 +61,14 @@ void QOkvedMainWindow::action_oocalc()
 {
     OdtWriter *odt_writer = new OdtWriter(this);
     QString template_path;
-    if (QFile(QDir::currentPath() + "templates/soffice.ods").exists())
+    if (QFile(QDir::convertSeparators(QDir::currentPath() + "/templates/soffice.ods")).exists())
         template_path = QDir::currentPath() + "templates/soffice.ods";
 
     if (QFile("../share/qokved/templates/soffice.ods").exists())
         template_path = "../share/qokved/templates/soffice.ods";
+
+    if (QFile("/usr/share/qokved/templates/soffice.ods").exists())
+        template_path = "/usr/share/qokved/templates/soffice.ods";
 
     if (template_path.isEmpty())
     {
@@ -81,8 +87,34 @@ void QOkvedMainWindow::action_oocalc()
 
 
     odt_writer->writeTable(table);
-    odt_writer->save(QDir::homePath() + "/test.ods");
-    odt_writer->startOO(QDir::homePath() + "/test.ods");
+    QString ods_temp = QString(QDir::tempPath()+"/%1").arg(QDateTime::currentDateTime().toTime_t()) + ".ods";
+    odt_writer->save(ods_temp);
+    odt_writer->startOO(ods_temp);
+
+}
+
+void QOkvedMainWindow::row_filter_update()
+{
+     QString filter = ui->filterEdit->text();
+     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+
+     if (filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
+         for(int i = 0; i < model->rowCount(); i++)
+         {
+             if (!model->data(model->index(i, 2)).toString().contains(filter, Qt::CaseInsensitive))
+             {
+                 ui->okvedsView->hideRow(i);
+             } else  ui->okvedsView->showRow(i);
+         }
+     } else {
+         for(int i = 0; i < model->rowCount(); i++)
+         {
+             if (!model->data(model->index(i, 1)).toString().startsWith(filter, Qt::CaseInsensitive))
+             {
+                 ui->okvedsView->hideRow(i);
+             } else  ui->okvedsView->showRow(i);
+         }
+     }
 
 }
 
@@ -102,10 +134,8 @@ void QOkvedMainWindow::razdels_update()
     connect(ui->razdelsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(razdels_row_changed()));
     ui->razdelsView->hideColumn(2);
     ui->razdelsView->hideColumn(3);
-//    connect(ui->okvedsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(okved_row_changed(const QModelIndex &, const QModelIndex & )));
 
-   // ui->razdelsView->setColumnWidth ( 0,  ui->razdelsView->width() );
-   // ui->razdelsView->setColumnWidth ( 1,  ui->razdelsView->width() );
+    ui->razdelsView->selectRow(0);
 }
 
 
@@ -115,10 +145,9 @@ void QOkvedMainWindow::razdels_row_changed()
     if (row > -1){
         QAbstractItemModel *model = ui->razdelsView->model();
 
-        ui->okvedsView->setModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt(), ui->filterEdit->text()));
+        ui->okvedsView->setModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
 
         ui->okvedsView->hideColumn(0);
-       // ui->okvedsView->hideColumn(2);
         ui->okvedsView->hideColumn(3);
         ui->okvedsView->hideColumn(4);
 
@@ -156,7 +185,7 @@ bool QOkvedMainWindow::eventFilter(QObject *object, QEvent *event)
                 int row = sel_mod.row();
 
                 model->setData(model->index(row, 3), text);
-                ui->okvedsView->selectionModel()->setCurrentIndex(sel_mod, QItemSelectionModel::SelectCurrent);
+                ui->okvedsView->selectRow(row);
             }
         }
     }
@@ -192,6 +221,7 @@ void QOkvedMainWindow::action_copy_table()
 
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
     buffer.append(QString::fromUtf8("<tr><td><b>Код по ОКВЭД</b></td><td>Наименование</td></tr>"));
+    if (model)
     for(int i = 0; i < model->rowCount(); i++)
     {
         buffer.append("<tr><td>"+model->data(model->index(i, 1)).toString()+"</td>" + " " + "<td WIDTH=400>"+model->data(model->index(i, 2)).toString()+"</td></tr>");
@@ -239,9 +269,9 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
                 //удаление всех оквэдов, относящихся к разделу
                 if (row == 0) return; //Если "все разделы"
                 QAbstractItemModel *model = ui->razdelsView->model();
-                QSqlTableModel *model_okved = qokved->okveds_model(model->data(model->index(row, 0)).toInt(), "");
+                QSqlTableModel *model_okved = qokved->okveds_model(model->data(model->index(row, 0)).toInt());
                 model_okved->removeRows(0, model_okved->rowCount());
-                ui->razdelsView->selectionModel()->setCurrentIndex(model->index(row-1, 1), QItemSelectionModel::SelectCurrent);
+                ui->razdelsView->selectRow(row-1);
                 model->removeRow(row);//Удаление самого раздела
 
             }
@@ -276,37 +306,11 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
                 model->insertRecord(dist_row, record);
                 int index_row=model->rowCount()-1;
                 if (dist_row!=-1) index_row = dist_row;
-                ui->razdelsView->selectionModel()->setCurrentIndex(model->index(index_row, 1), QItemSelectionModel::SelectCurrent);
+                ui->razdelsView->selectRow(index_row);
             }
         }
 
     }
-}
-
-void QOkvedMainWindow::addNewOkved(QString rid, QString number, QString name, QString caption)
-{
-    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
-    //(\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"
-
-    QSqlRecord record;
-    QSqlField field_name("name", QVariant::String);
-    field_name.setValue(name);
-    record.append(field_name);
-
-    QSqlField field_num("number", QVariant::String);
-    field_num.setValue(number);
-    record.append(field_num);
-
-    QSqlField field_cap("addition", QVariant::String);
-    field_cap.setValue(caption);
-    record.append(field_cap);
-
-    QSqlField field_rid("razdel_id", QVariant::Int);
-    field_rid.setValue(rid.toInt());
-    record.append(field_rid);
-
-    model->insertRecord(-1, record);
-
 }
 
 void QOkvedMainWindow::tablePopup(const QPoint & pos)
@@ -338,8 +342,7 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
                 } else {
                     new_row = row -1;
                 }
-                 ui->okvedsView->selectionModel()->setCurrentIndex(ui->okvedsView->model()->index(new_row, 2), QItemSelectionModel::SelectCurrent);
-
+                ui->okvedsView->selectRow(new_row);
              }
         }
         if (selectedItem->text() == QString::fromUtf8("Добавить ОКВЭД"))
@@ -356,13 +359,41 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
                 connect(dialog, SIGNAL(addNewOkved(QString, QString, QString, QString)), this, SLOT(addNewOkved(QString, QString, QString, QString)));
                 dialog->exec();
         }
-
     }
 }
 
 
+void QOkvedMainWindow::addNewOkved(QString rid, QString number, QString name, QString caption)
+{
+    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+    //(\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"
+
+    QSqlRecord record;
+    QSqlField field_name("name", QVariant::String);
+    field_name.setValue(name);
+    record.append(field_name);
+
+    QSqlField field_num("number", QVariant::String);
+    field_num.setValue(number);
+    record.append(field_num);
+
+    QSqlField field_cap("addition", QVariant::String);
+    field_cap.setValue(caption);
+    record.append(field_cap);
+
+    QSqlField field_rid("razdel_id", QVariant::Int);
+    field_rid.setValue(rid.toInt());
+    record.append(field_rid);
+
+    model->insertRecord(-1, record);
+
+}
+
 QOkvedMainWindow::~QOkvedMainWindow()
 {
+    QSettings settings("qokved", "qokved");
+    settings.setValue("last_filter", ui->filterEdit->text());
+
     delete ui;
     delete qokved;
 }
