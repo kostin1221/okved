@@ -42,6 +42,8 @@ public slots:
 
     void addNewOkved(QString rid, QString number, QString name, QString caption);
 
+    void dragEnterEvent(QDragEnterEvent *event);
+
 };
 
 #endif // QOKVEDMAINWINDOW_H

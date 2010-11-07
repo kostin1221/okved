@@ -126,7 +126,6 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         QString add_str;
         QString pordazdel_str;
         QString okved_number;
-        bool prilozhenie=false;
         bool skobki=false;
         bool add_info=false;
         bool podrazdel_info=false;
@@ -151,10 +150,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 
             if (line_str.isEmpty()) continue;
 
-            if (line_str.startsWith(QString::fromUtf8("Приложение А")))
-            {
-              prilozhenie = true;
-            } else if (line_str.startsWith(QString::fromUtf8("("))){
+            if (line_str.startsWith(QString::fromUtf8("("))){
                 skobki = true;
             }
             else if (line_str.endsWith(QString::fromUtf8(")"))){
@@ -173,7 +169,6 @@ void Libqokved::fill_db_from_zakon(QString zakon)
             } else if (line_str.startsWith(QString::fromUtf8("Подраздел "))){
 
                 pordazdel_str.clear();
-
                 podrazdel_info = true;
                 QSqlQuery query;
                 query.prepare("INSERT INTO razdelz (name, father) "
@@ -185,7 +180,6 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 query.bindValue(":name", line_str);
                 query.bindValue(":father", last_razdel);
                 query.exec();
-
 
                 last_podrazdel = query.lastInsertId().toInt();
 

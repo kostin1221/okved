@@ -36,8 +36,11 @@
        <property name="dragEnabled">
         <bool>true</bool>
        </property>
+       <property name="dragDropOverwriteMode">
+        <bool>false</bool>
+       </property>
        <property name="dragDropMode">
-        <enum>QAbstractItemView::DragOnly</enum>
+        <enum>QAbstractItemView::InternalMove</enum>
        </property>
        <property name="defaultDropAction">
         <enum>Qt::MoveAction</enum>
@@ -180,22 +183,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>additionView</sender>
-   <signal>textChanged()</signal>
-   <receiver>QOkvedMainWindow</receiver>
-   <slot>additionTextChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>473</x>
-     <y>343</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>316</x>
-     <y>231</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>action_copy_text</sender>
    <signal>triggered()</signal>
    <receiver>QOkvedMainWindow</receiver>
@@ -302,5 +289,6 @@
   <slot>razdelzTablePopup(QPoint)</slot>
   <slot>row_filter_update()</slot>
   <slot>createDbFromTxt()</slot>
+  <slot>dragEnterEvent(QDragEnterEvent*)</slot>
  </slots>
 </ui>

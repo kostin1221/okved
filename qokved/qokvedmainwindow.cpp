@@ -34,7 +34,16 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     QSettings settings("qokved", "qokved");
     ui->filterEdit->setText(settings.value("last_filter").toString());
 
+    ui->razdelsView->setAcceptDrops(true);
+
 }
+
+void QOkvedMainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    qDebug() << "event";
+       event->accept();
+}
+
 
 void QOkvedMainWindow::createDbFromTxt()
 {
