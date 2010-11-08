@@ -13,10 +13,10 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += libqokved.cpp \
-    odtwriter.cpp
+    odswriter.cpp
 
 HEADERS += libqokved.h \
-    odtwriter.h
+    odswriter.h
 
 TARGET = qokved
 

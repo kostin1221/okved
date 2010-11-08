@@ -1,7 +1,7 @@
 #include "qokvedmainwindow.h"
 #include "ui_qokvedmainwindow.h"
 
-#include "odtwriter.h"
+#include "odswriter.h"
 #include "addokveddialog.h"
 
 #include <QDebug>
@@ -71,8 +71,8 @@ void QOkvedMainWindow::errorMessage(QString message)
 
 void QOkvedMainWindow::action_oocalc()
 {
-    if (ui->okvedsView->model()->rowCount()) return;
-    OdtWriter *odt_writer = new OdtWriter(this);
+    if (ui->okvedsView->model()->rowCount()==0) return;
+    OdsWriter *ods_writer = new OdsWriter(this);
     QString template_path;
     if (QFile(QDir::convertSeparators(QDir::currentPath() + "/templates/soffice.ods")).exists())
         template_path = QDir::currentPath() + "templates/soffice.ods";
@@ -88,7 +88,7 @@ void QOkvedMainWindow::action_oocalc()
         errorMessage(QString::fromUtf8("Невозможно найти путь к soffice.ods"));
         return;
     }
-    odt_writer->open(template_path);
+    ods_writer->open(template_path);
 
     QMap<QString, QString> table;
 
@@ -99,10 +99,10 @@ void QOkvedMainWindow::action_oocalc()
     }
 
 
-    odt_writer->writeTable(table);
+    ods_writer->writeTable(table);
     QString ods_temp = QString(QDir::tempPath()+"/%1").arg(QDateTime::currentDateTime().toTime_t()) + ".ods";
-    odt_writer->save(ods_temp);
-    odt_writer->startOO(ods_temp);
+    ods_writer->save(ods_temp);
+    ods_writer->startOO(ods_temp);
 
 }
 
@@ -215,7 +215,7 @@ bool QOkvedMainWindow::eventFilter(QObject *object, QEvent *event)
 
 void QOkvedMainWindow::action_copy_text()
 {
-    if (ui->okvedsView->model()->rowCount()) return;
+    if (ui->okvedsView->model()->rowCount()==0) return;
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
     QString buffer;
     for(int i = 0; i < model->rowCount(); i++)
@@ -228,7 +228,7 @@ void QOkvedMainWindow::action_copy_text()
 
 void QOkvedMainWindow::action_copy_table()
 {
-    if (ui->okvedsView->model()->rowCount()) return;
+    if (ui->okvedsView->model()->rowCount()==0) return;
     QClipboard *clipboard = QApplication::clipboard();
     QString buffer;
     QMimeData *mime = new QMimeData();
