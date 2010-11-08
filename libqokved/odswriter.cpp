@@ -51,11 +51,6 @@ bool OdsWriter::open( const QString &fname )
                 qDebug() <<  tr("unzip dead");
                 return false;
         }
-        else
-        {
-                qDebug() <<  tr("unzip normal");
-        }
-
 return true;
 }
 

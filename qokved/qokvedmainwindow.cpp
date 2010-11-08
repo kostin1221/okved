@@ -19,7 +19,7 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->additionView->installEventFilter(this);
 
-    qokved = new Libqokved();
+    qokved = new Libqokved(this);
 
     QString db_path=QDir::convertSeparators(QDir::homePath() + "/.qokved.db");
 
