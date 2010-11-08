@@ -28,6 +28,9 @@ FORMS    += qokvedmainwindow.ui \
 
 #TARGET = $$PREFIX/bin/qokved
 
+target.path = $$PREFIX/bin
+INSTALLS += target
+
 LIBS += ../libqokved/libqokved.a 
 PRE_TARGETDEPS += ../libqokved/libqokved.a
 
