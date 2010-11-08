@@ -35,6 +35,7 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     ui->filterEdit->setText(settings.value("last_filter").toString());
 
     ui->razdelsView->setAcceptDrops(true);
+    ui->razdelsView->viewport()->setAcceptDrops(true);
 
 }
 
