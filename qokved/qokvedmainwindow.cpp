@@ -21,7 +21,9 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved();
 
-    qokved->setDbPath(QDir::convertSeparators(QDir::currentPath() + "/okved.db"));
+    QString db_path=QDir::convertSeparators(QDir::homePath() + "/.qokved.db");
+
+    qokved->setDbPath(QDir::convertSeparators(QDir::homePath() + "/.qokved.db"));
 
     #ifdef Q_WS_WIN
         appDir = QDir::convertSeparators(QDir::homePath() + "/Application Data/qokved");
@@ -69,6 +71,7 @@ void QOkvedMainWindow::errorMessage(QString message)
 
 void QOkvedMainWindow::action_oocalc()
 {
+    if (ui->okvedsView->model()->rowCount()) return;
     OdtWriter *odt_writer = new OdtWriter(this);
     QString template_path;
     if (QFile(QDir::convertSeparators(QDir::currentPath() + "/templates/soffice.ods")).exists())
@@ -212,6 +215,7 @@ bool QOkvedMainWindow::eventFilter(QObject *object, QEvent *event)
 
 void QOkvedMainWindow::action_copy_text()
 {
+    if (ui->okvedsView->model()->rowCount()) return;
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
     QString buffer;
     for(int i = 0; i < model->rowCount(); i++)
@@ -224,6 +228,7 @@ void QOkvedMainWindow::action_copy_text()
 
 void QOkvedMainWindow::action_copy_table()
 {
+    if (ui->okvedsView->model()->rowCount()) return;
     QClipboard *clipboard = QApplication::clipboard();
     QString buffer;
     QMimeData *mime = new QMimeData();
@@ -231,7 +236,6 @@ void QOkvedMainWindow::action_copy_table()
 
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
     buffer.append(QString::fromUtf8("<tr><td><b>Код по ОКВЭД</b></td><td>Наименование</td></tr>"));
-    if (model)
     for(int i = 0; i < model->rowCount(); i++)
     {
         buffer.append("<tr><td>"+model->data(model->index(i, 1)).toString()+"</td>" + " " + "<td WIDTH=400>"+model->data(model->index(i, 2)).toString()+"</td></tr>");

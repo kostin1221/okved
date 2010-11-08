@@ -121,6 +121,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         int i = 0;
         int last_razdel = 0;
         int last_podrazdel = 0;
+        int used_razdel = 0;
     
         QString id_str;
         QString add_str;
@@ -128,7 +129,8 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         QString okved_number;
         bool skobki=false;
         bool add_info=false;
-        bool podrazdel_info=false;
+        bool change_used_razdel=false;
+        bool podrazdel_info = true;
 
         QSqlQuery query;
         query.prepare("DELETE FROM razdelz");
@@ -165,6 +167,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 query.exec();
                 last_razdel = query.lastInsertId().toInt();
                 last_podrazdel = 0;
+                change_used_razdel = true;
     
             } else if (line_str.startsWith(QString::fromUtf8("Подраздел "))){
 
@@ -182,6 +185,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 query.exec();
 
                 last_podrazdel = query.lastInsertId().toInt();
+                change_used_razdel = true;
 
             } else if (line_str.startsWith(QString::fromUtf8("Эта группировка ")) || line_str.startsWith(QString::fromUtf8("В группировке "))){
                 add_info = true;
@@ -205,9 +209,11 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 query.bindValue(":number", okved_number);
                 query.bindValue(":name", id_str);
 
-                if (last_podrazdel!=0) {
-                    query.bindValue(":razdel_id", last_podrazdel);
-                } else query.bindValue(":razdel_id", last_razdel);
+
+                query.bindValue(":razdel_id", used_razdel);
+//                if (last_podrazdel!=0) {
+//                    query.bindValue(":razdel_id", last_podrazdel);
+//                } else query.bindValue(":razdel_id", last_razdel);
 
                 QString ab;
                 if (prilozhenie_a.contains(okved_number+" ")){
@@ -225,6 +231,14 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 if (ab == okved_number + " " +id_str.replace("\n", "")) query.bindValue(":addition", "");
 
                 query.exec();
+
+                if (change_used_razdel)
+                {
+                    if (last_podrazdel!=0) {
+                        used_razdel = last_podrazdel;
+                    } else used_razdel = last_razdel;
+                    change_used_razdel = false;
+                }
 
                 okved_number = line_str.left(prob_index);
                 id_str = line_str.right(line_str.count() - prob_index-1);
