@@ -24,6 +24,7 @@ public:
     bool setDbPath(QString db_path);
     void create_tables();
     void fill_db_from_zakon(QString zakon);
+    void update_db_date();
     QSqlTableModel* razdels_model();
     QSqlTableModel* okveds_model(int rid);
 

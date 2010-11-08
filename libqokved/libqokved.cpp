@@ -12,6 +12,11 @@ Libqokved::~Libqokved()
 
 }
 
+void Libqokved::update_db_date()
+{
+
+}
+
 bool Libqokved::setDbPath(QString db_path)
 {
     if (db.isOpen()) db.close();
@@ -54,6 +59,8 @@ void Libqokved::create_tables()
     if (!query.exec("CREATE TABLE razdelz (\"rid\" INTEGER PRIMARY KEY, \"name\" TEXT, \"caption\" TEXT, \"father\" INTEGER)"))
       qDebug() << query.lastError();
     if (!query.exec("CREATE TABLE okveds (\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"))
+      qDebug() << query.lastError();
+    if (!query.exec("CREATE TABLE info (\"id\" INTEGER PRIMARY KEY, \"key\" TEXT, \"value\" TEXT)"))
       qDebug() << query.lastError();
 }
 
