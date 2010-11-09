@@ -1,6 +1,7 @@
 #include "libqokved.h"
 
-Libqokved::Libqokved()
+Libqokved::Libqokved(QObject* parent = 0) :
+        QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
     //QSqlQuery *query = new QSqlQuery(db);
@@ -10,6 +11,23 @@ Libqokved::~Libqokved()
 {
   //  delete query;
 
+}
+
+void Libqokved::update_db_date()
+{
+     QSqlQuery querys("SELECT * FROM info WHERE key=\"date\"");
+     if (querys.numRowsAffected() > 0)
+     {
+         QSqlQuery query;
+         query.exec("UPDATE info SET value="+QDateTime::currentDateTime().toString("yyyyMMddhhmm") + "WHERE key=\"date\"");
+     } else {
+         QSqlQuery query;
+         query.prepare("INSERT INTO info (key, value) "
+                       "VALUES (:date, :value)");
+         query.bindValue(":date", "date");
+         query.bindValue(":value", QDateTime::currentDateTime().toString("yyyyMMddhhmm"));
+         query.exec();
+     }
 }
 
 bool Libqokved::setDbPath(QString db_path)
@@ -55,6 +73,9 @@ void Libqokved::create_tables()
       qDebug() << query.lastError();
     if (!query.exec("CREATE TABLE okveds (\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"))
       qDebug() << query.lastError();
+    if (!query.exec("CREATE TABLE info (\"id\" INTEGER PRIMARY KEY, \"key\" TEXT, \"value\" TEXT)"))
+      qDebug() << query.lastError();
+    update_db_date();
 }
 
 QSqlTableModel* Libqokved::razdels_model()
@@ -73,6 +94,9 @@ QSqlTableModel* Libqokved::razdels_model()
 
     model->setSort(0, Qt::AscendingOrder); // Сортировка по id
 
+    connect (model, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
+    connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
+    connect (model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
     return model;
     //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
 
@@ -106,6 +130,10 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
 
     //model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
   //  model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
+
+    connect (model, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
+    connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
+    connect (model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
 
     return model;
     //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
@@ -260,4 +288,5 @@ void Libqokved::fill_db_from_zakon(QString zakon)
     
             i++;
         }
+        update_db_date();
 }

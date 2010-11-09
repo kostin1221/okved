@@ -17,9 +17,11 @@ struct Okved {
     int razdel_id;
 };
 
-class Libqokved {
+class Libqokved: public QObject {
+    Q_OBJECT
+
 public:
-    Libqokved();
+    explicit Libqokved(QObject* parent);
     ~Libqokved();
     bool setDbPath(QString db_path);
     void create_tables();
@@ -30,6 +32,10 @@ public:
 private:
     QSqlDatabase db;
     QSqlQuery *query;
+
+public slots:
+    void update_db_date();
+
 };
 
 #endif // LIBQOKVED_H

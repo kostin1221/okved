@@ -4,11 +4,11 @@
 #include <QObject>
 #include <QMap>
 
-class OdtWriter : public QObject
+class OdsWriter : public QObject
 {
     Q_OBJECT
 public:
-    explicit OdtWriter(QObject *parent = 0);
+    explicit OdsWriter(QObject *parent = 0);
     bool open( const QString &fname );
     bool writeTable(QMap<QString, QString> table);
     bool save( const QString & fname );
@@ -16,9 +16,9 @@ public:
 
 private:
     QString copyName;
-signals:
 
-public slots:
+signals:
+    void errorMessage(QString error);
 
 };
 

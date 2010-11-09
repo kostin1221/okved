@@ -1,4 +1,4 @@
-#include "odtwriter.h"
+#include "odswriter.h"
 #include <QDir>
 #include <QProcess>
 #include <QDateTime>
@@ -7,12 +7,12 @@
 #include <QMessageBox>
 
 
-OdtWriter::OdtWriter(QObject *parent) :
+OdsWriter::OdsWriter(QObject *parent) :
     QObject(parent)
 {
 }
 
-bool OdtWriter::open( const QString &fname )
+bool OdsWriter::open( const QString &fname )
 {
         QDir dir;
         QString temp;
@@ -25,10 +25,8 @@ bool OdtWriter::open( const QString &fname )
 
         if(!dir.mkdir(copyName))
         {
-            QMessageBox::critical(0, "QOkved",
-                                           QString::fromUtf8("Невозможно создать временный каталог"),
-                                           QMessageBox::Ok);
-                return false;
+            errorMessage(QString::fromUtf8("Невозможно создать временный каталог"));
+            return false;
         }
 
         QProcess *process = new QProcess(this);
@@ -42,24 +40,19 @@ bool OdtWriter::open( const QString &fname )
 //#endif
         if (!process->waitForFinished())
         {
-                qDebug() <<  tr("unzip dead");
-                return false;
+            qDebug() <<  tr("unzip dead");
+            return false;
         }
 
         if( process->exitStatus() != QProcess::NormalExit )
         {
-                qDebug() <<  tr("unzip dead");
-                return false;
+            errorMessage(QString::fromUtf8("Ошибка запуска unzip, проверьте что он установлен и присутствует в PATH"));
+            return false;
         }
-        else
-        {
-                qDebug() <<  tr("unzip normal");
-        }
-
 return true;
 }
 
-bool OdtWriter::writeTable(QMap<QString, QString> table)
+bool OdsWriter::writeTable(QMap<QString, QString> table)
 {
     QString end_of_row = "</table:table-row>";
     QString end_of_style = "</style:style>";
@@ -88,7 +81,7 @@ bool OdtWriter::writeTable(QMap<QString, QString> table)
 
 }
 
-bool OdtWriter::save( const QString & fname )
+bool OdsWriter::save( const QString & fname )
 {
         QProcess *process = new QProcess(this);
         process->setWorkingDirectory(copyName);
@@ -105,15 +98,25 @@ bool OdtWriter::save( const QString & fname )
                 return false;
         }
 
+        if( process->exitStatus() != QProcess::NormalExit )
+        {
+            errorMessage(QString::fromUtf8("Ошибка запуска zip, проверьте что он установлен и присутствует в PATH"));
+            return false;
+        }
         return true;
 }
 
-bool OdtWriter::startOO( const QString & fname )
+bool OdsWriter::startOO( const QString & fname )
 {
 
     QProcess *process = new QProcess(this);
 
     process->start(QString("ooffice"), QStringList() << fname);
+    if( process->exitStatus() != QProcess::NormalExit )
+    {
+        errorMessage(QString::fromUtf8("Ошибка запуска OpenOffice, проверьте что он установлен и ooffice присутствует в PATH"));
+        return false;
+    }
     return true;
 }
 

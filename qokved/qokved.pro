@@ -37,7 +37,7 @@ PRE_TARGETDEPS += ../libqokved/libqokved.a
 RESOURCES += \
     qokved.qrc
 
-templates.files = templates/soffice.ods
+templates.files = templates/soffice.ods templates/qokved.db.default
 win32 {
     templates.path = $$PREFIX
 } else:mac {
