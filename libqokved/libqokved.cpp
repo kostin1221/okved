@@ -16,14 +16,15 @@ Libqokved::~Libqokved()
 void Libqokved::update_db_date()
 {
      QSqlQuery querys("SELECT * FROM info WHERE key=\"date\"");
-     if (querys.numRowsAffected() >= 0)
+     if (querys.numRowsAffected() > 0)
      {
          QSqlQuery query;
          query.exec("UPDATE info SET value="+QDateTime::currentDateTime().toString("yyyyMMddhhmm") + "WHERE key=\"date\"");
      } else {
          QSqlQuery query;
          query.prepare("INSERT INTO info (key, value) "
-                       "VALUES (date, :value)");
+                       "VALUES (:date, :value)");
+         query.bindValue(":date", "date");
          query.bindValue(":value", QDateTime::currentDateTime().toString("yyyyMMddhhmm"));
          query.exec();
      }

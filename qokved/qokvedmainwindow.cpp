@@ -21,15 +21,26 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved(this);
 
-    QString db_path=QDir::convertSeparators(QDir::homePath() + "/.qokved.db");
-
-    qokved->setDbPath(QDir::convertSeparators(QDir::homePath() + "/.qokved.db"));
-
     #ifdef Q_WS_WIN
         appDir = QDir::convertSeparators(QDir::homePath() + "/Application Data/qokved");
     #elif defined(Q_WS_X11)
         appDir = QDir::homePath() + "/.config/qokved/";
     #endif
+
+    QDir::root ().mkpath(appDir);
+
+    QString db_path=QDir::convertSeparators(appDir + "qokved.db");
+    if (!QFile(db_path).exists())
+    {
+        QFile def_db(QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/qokved.db.default"));
+        if (def_db.exists())
+        {
+            def_db.copy(db_path);
+        } else errorMessage(QString::fromUtf8("Не найдена база данных, будет создана новая!"));
+    }
+    qDebug() << db_path;
+
+    qokved->setDbPath(db_path);
 
     razdels_update();
 
