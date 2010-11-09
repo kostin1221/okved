@@ -16,9 +16,9 @@ public:
 
 private:
     QString copyName;
-signals:
 
-public slots:
+signals:
+    void errorMessage(QString error);
 
 };
 

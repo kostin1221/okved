@@ -27,18 +27,17 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
         appDir = QDir::homePath() + "/.config/qokved/";
     #endif
 
-    QDir::root ().mkpath(appDir);
+    QDir::root().mkpath(appDir);
 
     QString db_path=QDir::convertSeparators(appDir + "qokved.db");
     if (!QFile(db_path).exists())
     {
-        QFile def_db(QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/qokved.db.default"));
-        if (def_db.exists())
+        QString def_db_path = findExistPath(QStringList() << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/qokved.db.default")  << QDir::convertSeparators(QCoreApplication::applicationDirPath() + "/templates/qokved.db.default") );
+        if (def_db_path.isNull())
         {
-            def_db.copy(db_path);
+            QFile(def_db_path).copy(db_path);
         } else errorMessage(QString::fromUtf8("Не найдена база данных, будет создана новая!"));
     }
-    qDebug() << db_path;
 
     qokved->setDbPath(db_path);
 
@@ -49,15 +48,13 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     ui->razdelsView->setAcceptDrops(true);
     ui->razdelsView->viewport()->setAcceptDrops(true);
-
 }
 
 void QOkvedMainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     qDebug() << "event";
-       event->accept();
+    event->accept();
 }
-
 
 void QOkvedMainWindow::createDbFromTxt()
 {
@@ -80,21 +77,24 @@ void QOkvedMainWindow::errorMessage(QString message)
 
 }
 
+QString QOkvedMainWindow::findExistPath(QStringList path_list)
+{
+    for (int i = 0; i < path_list.size(); ++i)
+    {
+        if ( QFile(path_list.at(i)).exists() ) return path_list.at(i);
+    }
+
+    return QString::null;
+}
+
 void QOkvedMainWindow::action_oocalc()
 {
     if (ui->okvedsView->model()->rowCount()==0) return;
     OdsWriter *ods_writer = new OdsWriter(this);
-    QString template_path;
-    if (QFile(QDir::convertSeparators(QDir::currentPath() + "/templates/soffice.ods")).exists())
-        template_path = QDir::currentPath() + "templates/soffice.ods";
+    connect(ods_writer, SIGNAL(errorMessage(QString)), this, SLOT(errorMessage(QString)));
 
-    if (QFile("../share/qokved/templates/soffice.ods").exists())
-        template_path = "../share/qokved/templates/soffice.ods";
-
-    if (QFile("/usr/share/qokved/templates/soffice.ods").exists())
-        template_path = "/usr/share/qokved/templates/soffice.ods";
-
-    if (template_path.isEmpty())
+    QString template_path = findExistPath(QStringList() << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/templates/soffice.ods") << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/soffice.ods"));
+    if (template_path.isEmpty() || template_path.isNull())
     {
         errorMessage(QString::fromUtf8("Невозможно найти путь к soffice.ods"));
         return;
@@ -109,12 +109,10 @@ void QOkvedMainWindow::action_oocalc()
         table.insert(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 2)).toString());
     }
 
-
     ods_writer->writeTable(table);
     QString ods_temp = QString(QDir::tempPath()+"/%1").arg(QDateTime::currentDateTime().toTime_t()) + ".ods";
     ods_writer->save(ods_temp);
     ods_writer->startOO(ods_temp);
-
 }
 
 void QOkvedMainWindow::row_filter_update()
@@ -162,7 +160,6 @@ void QOkvedMainWindow::razdels_update()
     ui->razdelsView->selectRow(0);
 }
 
-
 void QOkvedMainWindow::razdels_row_changed()
 {
     int row = ui->razdelsView->selectionModel()->currentIndex().row();
@@ -184,7 +181,6 @@ void QOkvedMainWindow::razdels_row_changed()
 
 void QOkvedMainWindow::additionUpdate()
 {
-
     QAbstractItemModel *model = ui->okvedsView->model();
     int row = ui->okvedsView->selectionModel()->currentIndex().row();
     if (row > -1) {

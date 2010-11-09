@@ -25,7 +25,7 @@ private:
     QString appDir;
 
     void freeRid(int rid);
-
+    QString findExistPath(QStringList path_list);
 public slots:
     void razdels_row_changed();
     void additionUpdate();

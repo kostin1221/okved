@@ -25,10 +25,8 @@ bool OdsWriter::open( const QString &fname )
 
         if(!dir.mkdir(copyName))
         {
-            QMessageBox::critical(0, "QOkved",
-                                           QString::fromUtf8("Невозможно создать временный каталог"),
-                                           QMessageBox::Ok);
-                return false;
+            errorMessage(QString::fromUtf8("Невозможно создать временный каталог"));
+            return false;
         }
 
         QProcess *process = new QProcess(this);
@@ -42,14 +40,14 @@ bool OdsWriter::open( const QString &fname )
 //#endif
         if (!process->waitForFinished())
         {
-                qDebug() <<  tr("unzip dead");
-                return false;
+            qDebug() <<  tr("unzip dead");
+            return false;
         }
 
         if( process->exitStatus() != QProcess::NormalExit )
         {
-                qDebug() <<  tr("unzip dead");
-                return false;
+            errorMessage(QString::fromUtf8("Ошибка запуска unzip, проверьте что он установлен и присутствует в PATH"));
+            return false;
         }
 return true;
 }
@@ -100,6 +98,11 @@ bool OdsWriter::save( const QString & fname )
                 return false;
         }
 
+        if( process->exitStatus() != QProcess::NormalExit )
+        {
+            errorMessage(QString::fromUtf8("Ошибка запуска zip, проверьте что он установлен и присутствует в PATH"));
+            return false;
+        }
         return true;
 }
 
@@ -109,6 +112,11 @@ bool OdsWriter::startOO( const QString & fname )
     QProcess *process = new QProcess(this);
 
     process->start(QString("ooffice"), QStringList() << fname);
+    if( process->exitStatus() != QProcess::NormalExit )
+    {
+        errorMessage(QString::fromUtf8("Ошибка запуска OpenOffice, проверьте что он установлен и ooffice присутствует в PATH"));
+        return false;
+    }
     return true;
 }
 
