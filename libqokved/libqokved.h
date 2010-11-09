@@ -29,7 +29,12 @@ public:
     QSqlTableModel* razdels_model();
     QSqlTableModel* okveds_model(int rid);
 
+    bool setActiveVersion(int ver);
+    bool createVersion(QString name);
+    QMap<int, QString> versions();
+
 private:
+    int active_version;
     QSqlDatabase db;
     QSqlQuery *query;
 

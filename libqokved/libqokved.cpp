@@ -4,7 +4,7 @@ Libqokved::Libqokved(QObject* parent = 0) :
         QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    //QSqlQuery *query = new QSqlQuery(db);
+    active_version = -1;
 }
 
 Libqokved::~Libqokved()
@@ -39,41 +39,48 @@ bool Libqokved::setDbPath(QString db_path)
         qDebug() << db.lastError().text();
         return false;
     }
-
-//    QVariant v = db.driver()->handle();
-//    if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0) {
-//        // v.data() returns a pointer to the handle
-//        sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
-//        char *zErrMsg = 0;
-
-//        if (handle != 0) { // check that it is not NULL
-//            int res = sqlite3_enable_load_extension(handle,1);
-//            if (res == SQLITE_OK)
-//            {
-//                res = sqlite3_load_extension(handle,QDir::currentPath().toUtf8()+"/libSqliteIcu.so",0,&zErrMsg);
-//                if (res == SQLITE_OK)
-//                   ;
-//                else
-//                    fprintf(stderr, "Error loading SqliteIcu: %s\n", zErrMsg);
-//            }
-//            else
-//                   qDebug() << "Sqlite3 enable load extension fail";
-//        }
-//    }
-
     if ( !db.tables().contains("razdelz") ) create_tables();
     return true;
+}
+
+bool Libqokved::createVersion(QString name)
+{
+    QSqlQuery query;
+    query.prepare("INSERT INTO versions (name) "
+                       "VALUES (:name)");
+    query.bindValue(":name", name);
+    query.exec();
+    int id_version = query.lastInsertId().toInt();
+    if (!query.exec(QString::fromUtf8("CREATE TABLE %1_razdelz (\"rid\" INTEGER PRIMARY KEY, \"name\" TEXT, \"caption\" TEXT, \"father\" INTEGER)").arg(QString::number(id_version))))
+      qDebug() << query.lastError();
+    if (!query.exec(QString::fromUtf8("CREATE TABLE %1_okveds (\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )").arg(QString::number(id_version))))
+      qDebug() << query.lastError();
+    return true;
+}
+
+bool Libqokved::setActiveVersion(int ver)
+{
+    active_version = ver;
+    return true;
+}
+
+QMap<int, QString> Libqokved::versions()
+{
+    QMap<int, QString> ret;
+    QSqlQuery query("SELECT * FROM versions");
+    while (query.next()) {
+        ret.insert(query.value(0).toInt(), query.value(1).toString());
+    }
+    return ret;
 }
 
 //Создает таблицы в новой базе данных
 void Libqokved::create_tables()
 { 
     QSqlQuery query;
-    if (!query.exec("CREATE TABLE razdelz (\"rid\" INTEGER PRIMARY KEY, \"name\" TEXT, \"caption\" TEXT, \"father\" INTEGER)"))
-      qDebug() << query.lastError();
-    if (!query.exec("CREATE TABLE okveds (\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"))
-      qDebug() << query.lastError();
     if (!query.exec("CREATE TABLE info (\"id\" INTEGER PRIMARY KEY, \"key\" TEXT, \"value\" TEXT)"))
+      qDebug() << query.lastError();
+    if (!query.exec("CREATE TABLE versions (\"id\" INTEGER PRIMARY KEY, \"key\" TEXT)"))
       qDebug() << query.lastError();
     update_db_date();
 }
@@ -81,13 +88,10 @@ void Libqokved::create_tables()
 QSqlTableModel* Libqokved::razdels_model()
 {
     QSqlTableModel *model = new QSqlTableModel;
-    model->setTable("razdelz");
+    if (active_version==-1) return model;
+    model->setTable("%1_razdelz");
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
-   // model->removeColumn(0);
-  //  model->insertRow(0);
-   // model->removeColumn(2);
-    //model->removeColumn(2);
 
     model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
@@ -98,14 +102,12 @@ QSqlTableModel* Libqokved::razdels_model()
     connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
     return model;
-    //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
-
 }
 
 QSqlTableModel* Libqokved::okveds_model(int rid)
 {
     QSqlTableModel *model = new QSqlTableModel;
-    model->setTable("okveds");
+    model->setTable(QString("%1_okveds").arg(QString::number(active_version)));
 
     QString filter;
     if (rid != 1) {
@@ -161,12 +163,12 @@ void Libqokved::fill_db_from_zakon(QString zakon)
         bool podrazdel_info = true;
 
         QSqlQuery query;
-        query.prepare("DELETE FROM razdelz");
+        query.prepare("DELETE FROM %1_razdelz");
         query.exec();
-        query.prepare("DELETE FROM okveds");
+        query.prepare("DELETE FROM %1_okveds");
         query.exec();
 
-        query.prepare("INSERT INTO razdelz (name, father) "
+        query.prepare("INSERT INTO %1_razdelz (name, father) "
                            "VALUES (:name, 9999)");
         query.bindValue(":name", QString::fromUtf8("Все разделы"));
         query.exec();
@@ -189,11 +191,11 @@ void Libqokved::fill_db_from_zakon(QString zakon)
             else if (skobki){ continue;}
             else if (line_str.startsWith(QString::fromUtf8("РАЗДЕЛ "))){
                 QSqlQuery query;
-                query.prepare("INSERT INTO razdelz (name, father) "
+                query.prepare("INSERT INTO %1_razdelz (name, father) "
                                    "VALUES (:name, 0)");
                 QString razdel_name = line_str.toLower();
                 razdel_name[0] = line_str.toUpper()[0];
-                query.bindValue(":name", line_str);
+                query.bindValue(":name", razdel_name);
                 query.exec();
                 last_razdel = query.lastInsertId().toInt();
                 last_podrazdel = 0;
@@ -204,13 +206,15 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 pordazdel_str.clear();
                 podrazdel_info = true;
                 QSqlQuery query;
-                query.prepare("INSERT INTO razdelz (name, father) "
+                query.prepare("INSERT INTO %1_razdelz (name, father) "
                                    "VALUES (:name, :father)");
 
                 if (!lines[o+1].simplified().isEmpty()) line_str = line_str + " " + lines[o+1].simplified();
 
 
-                query.bindValue(":name", line_str);
+                QString razdel_name = line_str.toLower();
+                razdel_name[0] = line_str.toUpper()[0];
+                query.bindValue(":name", razdel_name);
                 query.bindValue(":father", last_razdel);
                 query.exec();
 
@@ -234,7 +238,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 
                 podrazdel_info = false;
                 QSqlQuery query;
-                query.prepare("INSERT INTO okveds (number, name, addition, razdel_id) "
+                query.prepare("INSERT INTO %1_okveds (number, name, addition, razdel_id) "
                               "VALUES (:number, :name, :addition, :razdel_id)");
                 query.bindValue(":number", okved_number);
                 query.bindValue(":name", id_str);
