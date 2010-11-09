@@ -163,6 +163,8 @@ void Libqokved::fill_db_from_zakon(QString zakon)
                 QSqlQuery query;
                 query.prepare("INSERT INTO razdelz (name, father) "
                                    "VALUES (:name, 0)");
+                QString razdel_name = line_str.toLower();
+                razdel_name[0] = line_str.toUpper()[0];
                 query.bindValue(":name", line_str);
                 query.exec();
                 last_razdel = query.lastInsertId().toInt();
