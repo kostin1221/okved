@@ -26,6 +26,8 @@ private:
 
     void freeRid(int rid);
     QString findExistPath(QStringList path_list);
+    void updateVersionsList();
+
 public slots:
     void razdels_row_changed();
     void additionUpdate();
@@ -43,6 +45,7 @@ public slots:
     void addNewOkved(QString rid, QString number, QString name, QString caption);
 
     void dragEnterEvent(QDragEnterEvent *event);
+    void versionsIndexChanged( int index );
 
 };
 

@@ -80,12 +80,6 @@
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <attribute name="horizontalHeaderMinimumSectionSize">
-           <number>100</number>
-          </attribute>
          </widget>
         </item>
        </layout>
@@ -130,9 +124,6 @@
            <attribute name="verticalHeaderVisible">
             <bool>false</bool>
            </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
           </widget>
           <widget class="QPlainTextEdit" name="additionView">
            <property name="readOnly">
@@ -153,7 +144,7 @@
      <x>0</x>
      <y>0</y>
      <width>634</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -310,6 +301,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>okvedVersionBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>versionsIndexChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>198</x>
+     <y>38</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>additionTextChanged()</slot>
@@ -322,5 +329,6 @@
   <slot>row_filter_update()</slot>
   <slot>createDbFromTxt()</slot>
   <slot>dragEnterEvent(QDragEnterEvent*)</slot>
+  <slot>versionsIndexChanged(int)</slot>
  </slots>
 </ui>

@@ -30,7 +30,7 @@ public:
     QSqlTableModel* okveds_model(int rid);
 
     bool setActiveVersion(int ver);
-    bool createVersion(QString name);
+    int createVersion(QString name);
     QMap<int, QString> versions();
 
 private:

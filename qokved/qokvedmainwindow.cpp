@@ -41,6 +41,7 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved->setDbPath(db_path);
 
+    updateVersionsList();
     razdels_update();
 
     QSettings settings("qokved", "qokved");
@@ -48,6 +49,26 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     ui->razdelsView->setAcceptDrops(true);
     ui->razdelsView->viewport()->setAcceptDrops(true);
+}
+
+void QOkvedMainWindow::versionsIndexChanged( int index )
+{
+    if (index != -1)
+	qokved->setActiveVersion(ui->okvedVersionBox->itemData(index).toInt());
+    razdels_update();
+}
+
+void QOkvedMainWindow::updateVersionsList()
+{
+    QMapIterator<int, QString> i(qokved->versions());
+    QString row;
+    while (i.hasNext()) {
+	i.next();
+	ui->okvedVersionBox->addItem(i.value(), i.key());
+    }
+
+    QSettings settings("qokved", "qokved");
+    ui->okvedVersionBox->setCurrentIndex(ui->okvedVersionBox->findData(settings.value("last_version", 1).toInt()));
 }
 
 void QOkvedMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -58,16 +79,29 @@ void QOkvedMainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void QOkvedMainWindow::createDbFromTxt()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                            QString::fromUtf8("Укажите путь к закону в txt"), QDir::homePath(), "Text Files (*.txt)");
-
-    if (!fileName.isEmpty())
+    bool ok;
+    QString text = QInputDialog::getText(this, QString::fromUtf8("Введите название нового закона"),
+                                         QString::fromUtf8("Закон: "), QLineEdit::Normal,
+					 "", &ok);
+    if (ok && !text.isEmpty())
     {
-        QFile file(fileName);
-        file.open(QIODevice::ReadOnly | QIODevice::Text);
-        QString data = QString::fromUtf8(file.readAll().data());
-        qokved->fill_db_from_zakon(data);
-        razdels_update();
+
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                                QString::fromUtf8("Укажите путь к закону в txt"), QDir::homePath(), "Text Files (*.txt)");
+
+        int ver_id = qokved->createVersion(text);
+	ui->okvedVersionBox->addItem(text, ver_id);
+	ui->okvedVersionBox->setCurrentIndex(ui->okvedVersionBox->count()-1);
+	//qokved->setActiveVersion(ver_id);
+
+        if (!fileName.isEmpty())
+        {
+            QFile file(fileName);
+            file.open(QIODevice::ReadOnly | QIODevice::Text);
+            QString data = QString::fromUtf8(file.readAll().data());
+            qokved->fill_db_from_zakon(data);
+            razdels_update();
+        }
     }
 }
 
@@ -387,7 +421,6 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
 void QOkvedMainWindow::addNewOkved(QString rid, QString number, QString name, QString caption)
 {
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
-    //(\"oid\" INTEGER PRIMARY KEY, \"number\" TEXT, \"name\" TEXT, \"addition\" TEXT, \"razdel_id\" INTEGER )"
 
     QSqlRecord record;
     QSqlField field_name("name", QVariant::String);
@@ -414,6 +447,7 @@ QOkvedMainWindow::~QOkvedMainWindow()
 {
     QSettings settings("qokved", "qokved");
     settings.setValue("last_filter", ui->filterEdit->text());
+    settings.setValue("last_version", ui->okvedVersionBox->itemData(ui->okvedVersionBox->currentIndex()).toInt());
 
     delete ui;
     delete qokved;
