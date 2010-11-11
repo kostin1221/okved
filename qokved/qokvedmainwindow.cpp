@@ -218,30 +218,43 @@ void QOkvedMainWindow::razdels_row_changed()
 
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
 
-    model->insertColumn(5);
-    model->setHeaderData(5, Qt::Horizontal, QString::fromUtf8("bool"));
+  //  model->insertColumn(5);
+  //  model->setHeaderData(5, Qt::Horizontal, QString::fromUtf8("bool"));
 
-   // qDebug() << model->itemData(model->index(4, 1)).keys()[1];
-    QMap<int, QVariant> map1;
-    map1.insert(Qt::DisplayRole, "123");
-    map1.insert(Qt::DisplayRole, "123");
-    //model->setItemData(model->index(2, 1), map1);
 
-    connect(model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
-    connect(model, SIGNAL(primeInsert(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
 
-    model->setData(model->index(2, 5), "3434", Qt::EditRole);
+  //  connect(model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
+  //  connect(model, SIGNAL(primeInsert(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
+
+    connect ( model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(okvedDataChanged()));
+    model->setData(model->index(2, 1), true, Qt::CheckStateRole);
 
 //    model->setData(model->index(2, 5), "text");
 }
 
+void QOkvedMainWindow::okvedDataChanged()
+{
+
+    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+
+    ui->okvedsView->hideColumn(0);
+    ui->okvedsView->hideColumn(3);
+    ui->okvedsView->hideColumn(4);
+  //  model->insertColumn(0);
+   // model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("bool"));
+}
+
 void QOkvedMainWindow::okvedUpdate(int row,QSqlRecord& record)
 {
-    qDebug() << "update: " << row;
-    qDebug() << record.count();
-  //  record.remove(4);
-    record.remove(5);
-    qDebug() << record.count();
+    ui->okvedsView->hideColumn(0);
+    ui->okvedsView->hideColumn(3);
+    ui->okvedsView->hideColumn(4);
+
+//    qDebug() << "update: " << row;
+//    qDebug() << record.count();
+//  //  record.remove(4);
+//    record.remove(5);
+//    qDebug() << record.count();
 }
 
 void QOkvedMainWindow::additionUpdate()

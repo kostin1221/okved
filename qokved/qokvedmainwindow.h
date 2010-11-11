@@ -48,6 +48,7 @@ public slots:
     void versionsIndexChanged( int index );
 
     void okvedUpdate(int row,QSqlRecord& record);
+    void okvedDataChanged();
 
 };
 

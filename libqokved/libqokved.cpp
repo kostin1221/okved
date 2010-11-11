@@ -13,6 +13,52 @@ Libqokved::~Libqokved()
 
 }
 
+bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & value, int role )
+{
+
+    if (index.column() == 1  && role==Qt::CheckStateRole)
+    {
+	//if(value.toInt( == Qt::Checked)
+	//{
+	    check[index.row()] = value.toInt();
+	   // qDebug() << QAbstractItemModel::setData(index, 2, Qt::DisplayRole);
+
+	    return true;
+	//} else return QSqlTableModel::setData(index, 0, Qt::DisplayRole);
+    }
+	return QSqlTableModel::setData ( index, value, role );
+//qDebug() << value;
+	//setData(index, value);
+}
+
+QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
+{
+    if (item.column() == 1 && role==Qt::CheckStateRole)
+    {
+	if (check.value(item.row(), 0) == 0)
+	{
+	    return Qt::Unchecked;
+	} else return Qt::Checked;
+    }
+
+	/*if (item.column() == 5 && role==Qt::DisplayRole)
+	{
+
+		return QVariant("123");
+	}*/
+	return QSqlQueryModel::data(item, role);
+}
+
+Qt::ItemFlags myQSqlQueryModel::flags(const QModelIndex &index) const
+{
+	Qt::ItemFlags flags = QSqlTableModel::flags(index);
+	//if (index.column() > 1 && index.column() < 3)
+	//        flags |= Qt::ItemIsEditable;
+	if (index.column() == 1)
+		flags |= Qt::ItemIsUserCheckable;
+	return flags;
+}
+
 void Libqokved::update_db_date()
 {
      QSqlQuery query;
@@ -80,9 +126,9 @@ void Libqokved::create_tables()
     update_db_date();
 }
 
-QSqlTableModel* Libqokved::razdels_model()
+myQSqlQueryModel* Libqokved::razdels_model()
 {
-    QSqlTableModel *model = new QSqlTableModel;
+    myQSqlQueryModel *model = new myQSqlQueryModel;
     if (active_version==-1) return model;
     model->setTable(QString("razdelz_%1").arg(QString::number(active_version)));
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -99,9 +145,9 @@ QSqlTableModel* Libqokved::razdels_model()
     return model;
 }
 
-QSqlTableModel* Libqokved::okveds_model(int rid)
+myQSqlQueryModel* Libqokved::okveds_model(int rid)
 {
-    QSqlTableModel *model = new QSqlTableModel;
+    myQSqlQueryModel *model = new myQSqlQueryModel;
     model->setTable(QString("okveds_%1").arg(QString::number(active_version)));
 
     QString filter;
