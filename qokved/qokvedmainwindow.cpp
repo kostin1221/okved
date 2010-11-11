@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QMap>
 
 QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,7 +34,8 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     if (!QFile(db_path).exists())
     {
         QString def_db_path = findExistPath(QStringList() << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/qokved.db.default")  << QDir::convertSeparators(QCoreApplication::applicationDirPath() + "/templates/qokved.db.default") );
-        if (def_db_path.isNull())
+
+       if (!def_db_path.isNull())
         {
             QFile(def_db_path).copy(db_path);
         } else errorMessage(QString::fromUtf8("Не найдена база данных, будет создана новая!"));
@@ -140,7 +142,8 @@ void QOkvedMainWindow::action_oocalc()
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
     for(int i = 0; i < model->rowCount(); i++)
     {
-        table.insert(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 2)).toString());
+        if (!ui->okvedsView->isRowHidden(i))
+            table.insert(model->data(model->index(i, 1)).toString(), model->data(model->index(i, 2)).toString());
     }
 
     ods_writer->writeTable(table);
@@ -165,7 +168,7 @@ void QOkvedMainWindow::row_filter_update()
      } else {
          for(int i = 0; i < model->rowCount(); i++)
          {
-             if (!model->data(model->index(i, 1)).toString().startsWith(filter, Qt::CaseInsensitive))
+             if (!model->data(model->index(i, 1)).toString().remove(".").startsWith(filter.remove("."), Qt::CaseInsensitive))  //Если код начинается с фильтра, без учета точке
              {
                  ui->okvedsView->hideRow(i);
              } else  ui->okvedsView->showRow(i);
@@ -211,6 +214,34 @@ void QOkvedMainWindow::razdels_row_changed()
 
         connect(ui->okvedsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(additionUpdate( )));
     }
+
+
+    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+
+    model->insertColumn(5);
+    model->setHeaderData(5, Qt::Horizontal, QString::fromUtf8("bool"));
+
+   // qDebug() << model->itemData(model->index(4, 1)).keys()[1];
+    QMap<int, QVariant> map1;
+    map1.insert(Qt::DisplayRole, "123");
+    map1.insert(Qt::DisplayRole, "123");
+    //model->setItemData(model->index(2, 1), map1);
+
+    connect(model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
+    connect(model, SIGNAL(primeInsert(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
+
+    model->setData(model->index(2, 5), "3434", Qt::EditRole);
+
+//    model->setData(model->index(2, 5), "text");
+}
+
+void QOkvedMainWindow::okvedUpdate(int row,QSqlRecord& record)
+{
+    qDebug() << "update: " << row;
+    qDebug() << record.count();
+  //  record.remove(4);
+    record.remove(5);
+    qDebug() << record.count();
 }
 
 void QOkvedMainWindow::additionUpdate()
@@ -261,7 +292,8 @@ void QOkvedMainWindow::action_copy_text()
     QString buffer;
     for(int i = 0; i < model->rowCount(); i++)
     {
-        buffer.append(model->data(model->index(i, 1)).toString() + " " + model->data(model->index(i, 2)).toString() + "\n");
+        if (!ui->okvedsView->isRowHidden(i))
+            buffer.append(model->data(model->index(i, 1)).toString() + " " + model->data(model->index(i, 2)).toString() + "\n");
     }
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(buffer);
@@ -279,7 +311,8 @@ void QOkvedMainWindow::action_copy_table()
     buffer.append(QString::fromUtf8("<tr><td><b>Код по ОКВЭД</b></td><td>Наименование</td></tr>"));
     for(int i = 0; i < model->rowCount(); i++)
     {
-        buffer.append("<tr><td>"+model->data(model->index(i, 1)).toString()+"</td>" + " " + "<td WIDTH=400>"+model->data(model->index(i, 2)).toString()+"</td></tr>");
+        if (!ui->okvedsView->isRowHidden(i))
+            buffer.append("<tr><td>"+model->data(model->index(i, 1)).toString()+"</td>" + " " + "<td WIDTH=400>"+model->data(model->index(i, 2)).toString()+"</td></tr>");
     }
     buffer.append("</table>");
 

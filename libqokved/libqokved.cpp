@@ -118,12 +118,16 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     } else filter.clear();
 
     model->setFilter(filter);
+    //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
+
     model->select();
 
     model->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
     model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
     model->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
+
+//SELECT *, CAST( 0 AS INT) AS newint FROM sample
 
     connect (model, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));

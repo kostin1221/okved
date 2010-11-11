@@ -47,6 +47,8 @@ public slots:
     void dragEnterEvent(QDragEnterEvent *event);
     void versionsIndexChanged( int index );
 
+    void okvedUpdate(int row,QSqlRecord& record);
+
 };
 
 #endif // QOKVEDMAINWINDOW_H
