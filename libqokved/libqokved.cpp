@@ -1,27 +1,53 @@
 #include "libqokved.h"
 
+
+
 Libqokved::Libqokved(QObject* parent = 0) :
         QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
     active_version = -1;
-}
 
+    okved_mdl = new myQSqlQueryModel();
+    razdels_mdl = new QSqlTableModel();
+}
 Libqokved::~Libqokved()
 {
+    delete okved_mdl;
+    delete razdels_mdl;
   //  delete query;
 
 }
+myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
+        QSqlTableModel ( parent, db )
+{
+    qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
 
+    QSettings settings("qokved", "qokved");
+    QVariant var = settings.value("user_filter");
+    check = qvariant_cast<CheckedList>(var);
+    check = var.value<CheckedList>();
+    qDebug() << check.count();
+}
+
+myQSqlQueryModel::~myQSqlQueryModel ( )
+{
+    qDebug() << "dest";
+    qDebug() << check.keys().count();
+
+    QSettings settings("qokved", "qokved");
+    QVariant var;
+    var.setValue<CheckedList>(check);
+    settings.setValue("user_filter", var);
+}
 bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & value, int role )
 {
-
     if (index.column() == 1  && role==Qt::CheckStateRole)
     {
 	//if(value.toInt( == Qt::Checked)
         //{
         if ( value.type() == QVariant::Int )
-            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toInt()] = value.toInt();
+            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toString()] = value.toInt();
 	   // qDebug() << QAbstractItemModel::setData(index, 2, Qt::DisplayRole);
 
 	    return true;
@@ -35,23 +61,9 @@ bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & val
 QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
 {
     if (item.column() == 1 && role==Qt::CheckStateRole)
-    {
-        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toInt(), 0);
-        /*qDebug() << check.value(item.row(), 0);
-        if (check.value(item.row(), 0) == 0)
-        {
-            return Qt::Unchecked;
-        } else { return Qt::Checked;
-               qDebug() << check.value(item.row(), 0);
-        }*/
-    }
+        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0);
 
-	/*if (item.column() == 5 && role==Qt::DisplayRole)
-	{
-
-		return QVariant("123");
-	}*/
-	return QSqlQueryModel::data(item, role);
+    return QSqlQueryModel::data(item, role);
 }
 
 Qt::ItemFlags myQSqlQueryModel::flags(const QModelIndex &index) const
@@ -131,29 +143,27 @@ void Libqokved::create_tables()
     update_db_date();
 }
 
-myQSqlQueryModel* Libqokved::razdels_model()
+QSqlTableModel* Libqokved::razdels_model()
 {
-    myQSqlQueryModel *model = new myQSqlQueryModel;
-    if (active_version==-1) return model;
-    model->setTable(QString("razdelz_%1").arg(QString::number(active_version)));
-    model->setEditStrategy(QSqlTableModel::OnFieldChange);
-    model->select();
+    if (active_version==-1) return razdels_mdl;
+    razdels_mdl->setTable(QString("razdelz_%1").arg(QString::number(active_version)));
+    razdels_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
+    razdels_mdl->select();
 
-    model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
-    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
+    razdels_mdl->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
+    razdels_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
 
-    model->setSort(0, Qt::AscendingOrder); // Сортировка по id
+    razdels_mdl->setSort(0, Qt::AscendingOrder); // Сортировка по id
 
-    connect (model, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
-    connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
-    connect (model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
-    return model;
+    connect (razdels_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
+    connect (razdels_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
+    connect (razdels_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
+    return razdels_mdl;
 }
 
 myQSqlQueryModel* Libqokved::okveds_model(int rid)
 {
-    myQSqlQueryModel *model = new myQSqlQueryModel;
-    model->setTable(QString("okveds_%1").arg(QString::number(active_version)));
+    okved_mdl->setTable(QString("okveds_%1").arg(QString::number(active_version)));
 
     QString filter;
     if (rid != 1) {
@@ -168,23 +178,23 @@ myQSqlQueryModel* Libqokved::okveds_model(int rid)
         filter.append(")");
     } else filter.clear();
 
-    model->setFilter(filter);
+    okved_mdl->setFilter(filter);
     //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    model->setEditStrategy(QSqlTableModel::OnFieldChange);
+    okved_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
-    model->select();
+    okved_mdl->select();
 
-    model->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
-    model->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
-    model->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
+    okved_mdl->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
+    okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
+    okved_mdl->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
 
 //SELECT *, CAST( 0 AS INT) AS newint FROM sample
 
-    connect (model, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
-    connect (model, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
-    connect (model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
+    connect (okved_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
+    connect (okved_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
+    connect (okved_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
 
-    return model;
+    return okved_mdl;
 }
 
 void Libqokved::fill_db_from_zakon(QString zakon)

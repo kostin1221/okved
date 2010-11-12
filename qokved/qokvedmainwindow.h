@@ -28,6 +28,8 @@ private:
     QString findExistPath(QStringList path_list);
     void updateVersionsList();
 
+    bool hide_not_checked;
+
 public slots:
     void razdels_row_changed();
     void additionUpdate();

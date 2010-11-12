@@ -5,11 +5,18 @@
 #include <QDebug>
 #include <QStringList>
 
+typedef QHash<QString, int> CheckedList;
+Q_DECLARE_METATYPE(CheckedList)
+
+
 class myQSqlQueryModel:public QSqlTableModel
 	{
 		Q_OBJECT
+
 	public:
-                QHash<int, int> check;
+                explicit myQSqlQueryModel ( QObject * parent = 0, QSqlDatabase db = QSqlDatabase() );
+                ~myQSqlQueryModel ( );
+                CheckedList check;
 		QVariant data(const QModelIndex &item, int role) const;
 		Qt::ItemFlags flags(const QModelIndex &index) const;
 		bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
@@ -24,7 +31,7 @@ public:
     bool setDbPath(QString db_path);
     void create_tables();
     void fill_db_from_zakon(QString zakon);
-    myQSqlQueryModel* razdels_model();
+    QSqlTableModel* razdels_model();
     myQSqlQueryModel* okveds_model(int rid);
 
     bool setActiveVersion(int ver);
@@ -35,6 +42,8 @@ private:
     int active_version;
     QSqlDatabase db;
     QSqlQuery *query;
+    myQSqlQueryModel *okved_mdl;
+    QSqlTableModel *razdels_mdl;
 
 public slots:
     void update_db_date();

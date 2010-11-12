@@ -22,6 +22,8 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved(this);
 
+    hide_not_checked = false;
+
     #ifdef Q_WS_WIN
         appDir = QDir::convertSeparators(QDir::homePath() + "/Application Data/qokved");
     #elif defined(Q_WS_X11)
@@ -43,14 +45,12 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved->setDbPath(db_path);
 
-    updateVersionsList();
-    razdels_update();
 
     QSettings settings("qokved", "qokved");
     ui->filterEdit->setText(settings.value("last_filter").toString());
 
-    ui->razdelsView->setAcceptDrops(true);
-    ui->razdelsView->viewport()->setAcceptDrops(true);
+    updateVersionsList();
+    razdels_update();
 }
 
 void QOkvedMainWindow::versionsIndexChanged( int index )
@@ -62,7 +62,8 @@ void QOkvedMainWindow::versionsIndexChanged( int index )
 
 void QOkvedMainWindow::checkButtonClicked ( bool checked )
 {
-    qDebug() << checked;
+    hide_not_checked = checked;
+    row_filter_update();
 }
 
 void QOkvedMainWindow::updateVersionsList()
@@ -160,11 +161,18 @@ void QOkvedMainWindow::action_oocalc()
 void QOkvedMainWindow::row_filter_update()
 {
      QString filter = ui->filterEdit->text();
-     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+     QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->okvedsView->model());
+
+  //   hide_not_checked
 
      if (filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
          for(int i = 0; i < model->rowCount(); i++)
          {
+             if ( hide_not_checked && model->data(model->index(i, 1), Qt::CheckStateRole).toInt() == 0 )
+             {
+                 ui->okvedsView->hideRow(i);
+                 continue;
+             }
              if (!model->data(model->index(i, 2)).toString().contains(filter, Qt::CaseInsensitive))
              {
                  ui->okvedsView->hideRow(i);
@@ -173,6 +181,11 @@ void QOkvedMainWindow::row_filter_update()
      } else {
          for(int i = 0; i < model->rowCount(); i++)
          {
+             if ( hide_not_checked && model->data(model->index(i, 1), Qt::CheckStateRole).toInt() == 0 )
+             {
+                 ui->okvedsView->hideRow(i);
+                 continue;
+             }
              if (!model->data(model->index(i, 1)).toString().remove(".").startsWith(filter.remove("."), Qt::CaseInsensitive))  //Если код начинается с фильтра, без учета точке
              {
                  ui->okvedsView->hideRow(i);
@@ -200,6 +213,8 @@ void QOkvedMainWindow::razdels_update()
     ui->razdelsView->hideColumn(3);
 
     ui->razdelsView->selectRow(0);
+
+    row_filter_update();
 }
 
 void QOkvedMainWindow::razdels_row_changed()
@@ -223,37 +238,29 @@ void QOkvedMainWindow::razdels_row_changed()
 
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
 
-  //  model->insertColumn(5);
-  //  model->setHeaderData(5, Qt::Horizontal, QString::fromUtf8("bool"));
-
-
-
-  //  connect(model, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
-  //  connect(model, SIGNAL(primeInsert(int,QSqlRecord&)), this, SLOT(okvedUpdate(int,QSqlRecord&)));
-
     connect ( model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(okvedDataChanged()));
-    model->setData(model->index(2, 1), true, Qt::CheckStateRole);
 
-//    model->setData(model->index(2, 5), "text");
+    row_filter_update();
 }
 
 void QOkvedMainWindow::okvedDataChanged()
 {
 
-    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
-
-    ui->okvedsView->hideColumn(0);
-    ui->okvedsView->hideColumn(3);
-    ui->okvedsView->hideColumn(4);
+//    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
+//
+//    ui->okvedsView->hideColumn(0);
+//    ui->okvedsView->hideColumn(3);
+//    ui->okvedsView->hideColumn(4);
+    row_filter_update();
   //  model->insertColumn(0);
    // model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("bool"));
 }
 
 void QOkvedMainWindow::okvedUpdate(int row,QSqlRecord& record)
 {
-    ui->okvedsView->hideColumn(0);
-    ui->okvedsView->hideColumn(3);
-    ui->okvedsView->hideColumn(4);
+//    ui->okvedsView->hideColumn(0);
+//    ui->okvedsView->hideColumn(3);
+//    ui->okvedsView->hideColumn(4);
 
 //    qDebug() << "update: " << row;
 //    qDebug() << record.count();

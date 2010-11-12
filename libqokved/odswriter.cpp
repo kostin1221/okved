@@ -78,7 +78,6 @@ bool OdsWriter::writeTable(QMap<QString, QString> table)
     QTextStream out(&file);
     out << data;
     return true;
-
 }
 
 bool OdsWriter::save( const QString & fname )
