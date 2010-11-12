@@ -29,6 +29,7 @@ private:
     void updateVersionsList();
 
     bool hide_not_checked;
+    bool db_edit_blocked;
 
 public slots:
     void razdels_row_changed();
@@ -40,6 +41,9 @@ public slots:
     void action_copy_text();
     void action_copy_table();
     void action_oocalc();
+    void action_create_base_list();
+
+    void actionBlockDbEdit(bool block);
     void tablePopup(const QPoint & pos);
     void razdelzTablePopup(const QPoint & pos);
     void errorMessage(QString message);

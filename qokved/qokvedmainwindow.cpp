@@ -3,6 +3,7 @@
 
 #include "odswriter.h"
 #include "addokveddialog.h"
+#include "listsmanipulations.h"
 
 #include <QDebug>
 #include <QFile>
@@ -53,6 +54,12 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     razdels_update();
 }
 
+void QOkvedMainWindow::action_create_base_list()
+{
+    listsManipulations *dialog = new listsManipulations(this);
+    dialog->exec();
+}
+
 void QOkvedMainWindow::versionsIndexChanged( int index )
 {
     if (index != -1)
@@ -60,9 +67,28 @@ void QOkvedMainWindow::versionsIndexChanged( int index )
     razdels_update();
 }
 
+void QOkvedMainWindow::actionBlockDbEdit(bool block)
+{
+    db_edit_blocked = block;
+
+    ui->additionView->setReadOnly(db_edit_blocked);
+    ui->action_create_db_from_txt->setEnabled(!db_edit_blocked);
+
+    if (db_edit_blocked)
+    {
+	ui->razdelsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui->okvedsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    } else {
+	ui->razdelsView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
+	ui->okvedsView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
+    }
+}
+
 void QOkvedMainWindow::checkButtonClicked ( bool checked )
 {
     hide_not_checked = checked;
+    myQSqlQueryModel *model =  static_cast<myQSqlQueryModel*>(ui->okvedsView->model());
+    model->setCheckBoxesEnabled(!checked);
     row_filter_update();
 }
 
@@ -366,11 +392,14 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
     QModelIndex sel_mod = ui->razdelsView->selectionModel()->currentIndex();
     int row = sel_mod.row();
     QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->razdelsView->model());
-    if (model->data(model->index(row, 3)).toString() == "0" )
-        myMenu.addAction(QString::fromUtf8("Создать подраздел"));
+    if (!db_edit_blocked)
+    {
+	if (model->data(model->index(row, 3)).toString() == "0" )
+	    myMenu.addAction(QString::fromUtf8("Создать подраздел"));
 
-    myMenu.addAction(QString::fromUtf8("Создать раздел"));
-    myMenu.addAction(QString::fromUtf8("Удалить раздел"));
+	myMenu.addAction(QString::fromUtf8("Создать раздел"));
+	myMenu.addAction(QString::fromUtf8("Удалить раздел"));
+    }
 
     QAction* selectedItem = myMenu.exec(globalPos);
     if (selectedItem)
@@ -436,8 +465,11 @@ void QOkvedMainWindow::tablePopup(const QPoint & pos)
     int row = sel_mod.row();
 
     QMenu myMenu;
+    if (!db_edit_blocked)
+    {
     myMenu.addAction(QString::fromUtf8("Добавить ОКВЭД"));
     myMenu.addAction(QString::fromUtf8("Удалить ОКВЭД"));
+    }
     // ...
 
     QAction* selectedItem = myMenu.exec(globalPos);

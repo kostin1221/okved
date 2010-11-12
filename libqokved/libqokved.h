@@ -13,6 +13,9 @@ class myQSqlQueryModel:public QSqlTableModel
 	{
 		Q_OBJECT
 
+	private:
+	    bool check_boxes_enabled;
+
 	public:
                 explicit myQSqlQueryModel ( QObject * parent = 0, QSqlDatabase db = QSqlDatabase() );
                 ~myQSqlQueryModel ( );
@@ -20,6 +23,7 @@ class myQSqlQueryModel:public QSqlTableModel
 		QVariant data(const QModelIndex &item, int role) const;
 		Qt::ItemFlags flags(const QModelIndex &index) const;
 		bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
+		void setCheckBoxesEnabled ( bool enabled );
 	};
 
 class Libqokved: public QObject {

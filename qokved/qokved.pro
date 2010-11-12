@@ -18,13 +18,16 @@ INCLUDEPATH += ../libqokved
 
 SOURCES += main.cpp\
         qokvedmainwindow.cpp \
-    addokveddialog.cpp
+    addokveddialog.cpp \
+    listsmanipulations.cpp
 
 HEADERS  += qokvedmainwindow.h \
-    addokveddialog.h
+    addokveddialog.h \
+    listsmanipulations.h
 
 FORMS    += qokvedmainwindow.ui \
-    addokveddialog.ui
+    addokveddialog.ui \
+    listsmanipulations.ui
 
 #TARGET = $$PREFIX/bin/qokved
 
@@ -47,4 +50,3 @@ win32 {
 }
 
 INSTALLS += templates
-

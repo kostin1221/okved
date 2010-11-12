@@ -18,6 +18,12 @@ Libqokved::~Libqokved()
   //  delete query;
 
 }
+
+void myQSqlQueryModel::setCheckBoxesEnabled ( bool enabled )
+{
+    check_boxes_enabled = enabled;
+}
+
 myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
         QSqlTableModel ( parent, db )
 {
@@ -46,7 +52,7 @@ bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & val
     {
 	//if(value.toInt( == Qt::Checked)
         //{
-        if ( value.type() == QVariant::Int )
+	if ( value.type() == QVariant::Int && check_boxes_enabled)
             check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toString()] = value.toInt();
 	   // qDebug() << QAbstractItemModel::setData(index, 2, Qt::DisplayRole);
 
