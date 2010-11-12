@@ -49,7 +49,7 @@ public slots:
 
     void okvedUpdate(int row,QSqlRecord& record);
     void okvedDataChanged();
-
+    void checkButtonClicked ( bool checked );
 };
 
 #endif // QOKVEDMAINWINDOW_H

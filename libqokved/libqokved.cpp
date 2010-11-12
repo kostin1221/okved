@@ -19,8 +19,9 @@ bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & val
     if (index.column() == 1  && role==Qt::CheckStateRole)
     {
 	//if(value.toInt( == Qt::Checked)
-	//{
-	    check[index.row()] = value.toInt();
+        //{
+        if ( value.type() == QVariant::Int )
+            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toInt()] = value.toInt();
 	   // qDebug() << QAbstractItemModel::setData(index, 2, Qt::DisplayRole);
 
 	    return true;
@@ -35,10 +36,14 @@ QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
 {
     if (item.column() == 1 && role==Qt::CheckStateRole)
     {
-	if (check.value(item.row(), 0) == 0)
-	{
-	    return Qt::Unchecked;
-	} else return Qt::Checked;
+        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toInt(), 0);
+        /*qDebug() << check.value(item.row(), 0);
+        if (check.value(item.row(), 0) == 0)
+        {
+            return Qt::Unchecked;
+        } else { return Qt::Checked;
+               qDebug() << check.value(item.row(), 0);
+        }*/
     }
 
 	/*if (item.column() == 5 && role==Qt::DisplayRole)

@@ -43,6 +43,16 @@
           <item>
            <widget class="QComboBox" name="okvedVersionBox"/>
           </item>
+          <item>
+           <widget class="QToolButton" name="checkedButton">
+            <property name="text">
+             <string>Только отмеченные</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -144,7 +154,7 @@
      <x>0</x>
      <y>0</y>
      <width>634</width>
-     <height>20</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -317,6 +327,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>checkedButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>checkButtonClicked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>271</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>additionTextChanged()</slot>
@@ -330,5 +356,6 @@
   <slot>createDbFromTxt()</slot>
   <slot>dragEnterEvent(QDragEnterEvent*)</slot>
   <slot>versionsIndexChanged(int)</slot>
+  <slot>checkButtonClicked(bool)</slot>
  </slots>
 </ui>

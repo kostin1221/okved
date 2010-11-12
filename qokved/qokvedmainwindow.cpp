@@ -60,6 +60,11 @@ void QOkvedMainWindow::versionsIndexChanged( int index )
     razdels_update();
 }
 
+void QOkvedMainWindow::checkButtonClicked ( bool checked )
+{
+    qDebug() << checked;
+}
+
 void QOkvedMainWindow::updateVersionsList()
 {
     QMapIterator<int, QString> i(qokved->versions());
