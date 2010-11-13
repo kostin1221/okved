@@ -171,6 +171,7 @@
     </property>
     <addaction name="action_create_db_from_txt"/>
     <addaction name="action_create_base_list"/>
+    <addaction name="action_upload_base"/>
     <addaction name="action_block_bd_edit"/>
    </widget>
    <widget class="QMenu" name="menu_3">
@@ -217,6 +218,11 @@
   <action name="action_create_base_list">
    <property name="text">
     <string>Создать предопределенный список из отмеченных галочек</string>
+   </property>
+  </action>
+  <action name="action_upload_base">
+   <property name="text">
+    <string>Выгрузить базу на сервер</string>
    </property>
   </action>
  </widget>

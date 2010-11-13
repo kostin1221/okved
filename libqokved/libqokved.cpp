@@ -15,8 +15,6 @@ Libqokved::~Libqokved()
 {
     delete okved_mdl;
     delete razdels_mdl;
-  //  delete query;
-
 }
 
 void myQSqlQueryModel::setCheckBoxesEnabled ( bool enabled )
@@ -27,6 +25,7 @@ void myQSqlQueryModel::setCheckBoxesEnabled ( bool enabled )
 myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
         QSqlTableModel ( parent, db )
 {
+    check_boxes_enabled = true;
     qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
 
     QSettings settings("qokved", "qokved");
@@ -66,8 +65,15 @@ bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & val
 
 QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
 {
-    if (item.column() == 1 && role==Qt::CheckStateRole)
-        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0);
+    if (item.column() == 1 && role==Qt::CheckStateRole)   //В первой колонке - чекбоксы
+	if (check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0) == Qt::Unchecked)
+	{
+	    return Qt::Unchecked;
+	}
+	else if (!check_boxes_enabled)   //Если чекбоксы выключены, то возвращаем PartiallyChecked, больно они похожи на выключенные
+	{
+	    return Qt::PartiallyChecked;
+	} else return Qt::Checked;
 
     return QSqlQueryModel::data(item, role);
 }
@@ -185,7 +191,6 @@ myQSqlQueryModel* Libqokved::okveds_model(int rid)
     } else filter.clear();
 
     okved_mdl->setFilter(filter);
-    //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     okved_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     okved_mdl->select();
@@ -194,8 +199,6 @@ myQSqlQueryModel* Libqokved::okveds_model(int rid)
     okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
     okved_mdl->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
 
-//SELECT *, CAST( 0 AS INT) AS newint FROM sample
-
     connect (okved_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
@@ -203,6 +206,12 @@ myQSqlQueryModel* Libqokved::okveds_model(int rid)
     return okved_mdl;
 }
 
+
+/*
+    Аргумент - строка с законом. Единственный закон 2007 года, который нашел - в консультанте
+    экспортируется от туда в таком форматировании, что страшно представить, поэтому парсер такой длинный,
+    чтоб хоть как-то сгладить ситуацию.
+*/
 void Libqokved::fill_db_from_zakon(QString zakon)
 {
     zakon = zakon.remove(0, zakon.indexOf(QString::fromUtf8("РАЗДЕЛ A")));
