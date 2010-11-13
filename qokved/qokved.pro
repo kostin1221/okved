@@ -8,31 +8,21 @@ QT += core \
 TARGET = qokved
 TEMPLATE = app
 INCLUDEPATH += ../libqokved
-<<<<<<< HEAD
-SOURCES += main.cpp \
-    qokvedmainwindow.cpp \
-    addokveddialog.cpp \
-    okvedssortfilterproxymodel.cpp
-HEADERS += qokvedmainwindow.h \
-    addokveddialog.h \
-    okvedssortfilterproxymodel.h
-FORMS += qokvedmainwindow.ui \
-    addokveddialog.ui
-=======
 
 SOURCES += main.cpp\
         qokvedmainwindow.cpp \
     addokveddialog.cpp \
-    listsmanipulations.cpp
+    listsmanipulations.cpp\
+    okvedssortfilterproxymodel.cpp
 
 HEADERS  += qokvedmainwindow.h \
     addokveddialog.h \
-    listsmanipulations.h
+    listsmanipulations.h\
+    okvedssortfilterproxymodel.h
 
 FORMS    += qokvedmainwindow.ui \
     addokveddialog.ui \
     listsmanipulations.ui
->>>>>>> 52fad30d70c612bdb3ab222916d3ffbe6c734c21
 
 # TARGET = $$PREFIX/bin/qokved
 target.path = $$PREFIX/bin

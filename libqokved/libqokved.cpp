@@ -6,13 +6,13 @@ Libqokved::Libqokved(QObject* parent = 0) :
     db = QSqlDatabase::addDatabase("QSQLITE");
     active_version = -1;
 
-    okved_mdl = new QSqlTableModel();
-    razdels_mdl = new QSqlTableModel();
+    razdels_mdl = false;
+    okved_mdl = false;
+
 }
 Libqokved::~Libqokved()
 {
-    delete okved_mdl;
-    delete razdels_mdl;
+
 }
 
 void Libqokved::update_db_date()
@@ -84,43 +84,34 @@ void Libqokved::create_tables()
 
 QSqlTableModel* Libqokved::razdels_model()
 {
-    if (active_version==-1) return razdels_mdl;
-    razdels_mdl->setTable(QString("razdelz_%1").arg(QString::number(active_version)));
-    razdels_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
-    razdels_mdl->select();
+    if (!razdels_mdl)
+    {
 
+    razdels_mdl = new QSqlTableModel(this);
     razdels_mdl->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
     razdels_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
 
-    razdels_mdl->setSort(0, Qt::AscendingOrder); // Сортировка по id
+    //razdels_mdl->setSort(0, Qt::AscendingOrder); // Сортировка по id
+    razdels_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     connect (razdels_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (razdels_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (razdels_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
+    }
+
+    if (active_version==-1) return razdels_mdl;
+    razdels_mdl->setTable(QString("razdelz_%1").arg(QString::number(active_version)));
+    razdels_mdl->select();
     return razdels_mdl;
 }
 
 QSqlTableModel* Libqokved::okveds_model(int rid)
 {
-    okved_mdl->setTable(QString("okveds_%1").arg(QString::number(active_version)));
+    if (!okved_mdl)
+    {
+    okved_mdl = new QSqlTableModel();
 
-    QString filter;
-    if (rid != 1) {
-        filter = "(razdel_id="+QString::number(rid);
-
-	QSqlQuery query(QString("SELECT rid FROM razdelz_%1 WHERE father="+QString::number(rid)).arg(QString::number(active_version)));
-        while (query.next()) {
-            QString rid2 = query.value(0).toString();
-
-            filter.append(" OR razdel_id="+rid2);
-        }
-        filter.append(")");
-    } else filter.clear();
-
-    okved_mdl->setFilter(filter);
     okved_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
-
-    okved_mdl->select();
 
     okved_mdl->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
     okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
@@ -129,6 +120,25 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     connect (okved_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
+    }
+
+    okved_mdl->setTable(QString("okveds_%1").arg(QString::number(active_version)));
+
+    QString filter;
+    if (rid != 1) {
+	filter = "razdel_id="+QString::number(rid);
+
+	QSqlQuery query(QString("SELECT rid FROM razdelz_%1 WHERE father="+QString::number(rid)).arg(QString::number(active_version)));
+	while (query.next()) {
+	    QString rid2 = query.value(0).toString();
+
+	    filter.append(" OR razdel_id="+rid2);
+	}
+    } else filter.clear();
+
+    okved_mdl->setFilter(filter);
+    okved_mdl->select();
+
 
     return okved_mdl;
 }
