@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "libqokved.h"
 
+#include "okvedssortfilterproxymodel.h"
+
 namespace Ui {
     class QOkvedMainWindow;
 }
@@ -28,7 +30,7 @@ private:
     QString findExistPath(QStringList path_list);
     void updateVersionsList();
 
-    bool hide_not_checked;
+    OkvedsSortFilterProxyModel* okveds_proxy_model;
 
 public slots:
     void razdels_row_changed();

@@ -1,14 +1,12 @@
 #include "libqokved.h"
 
-
-
 Libqokved::Libqokved(QObject* parent = 0) :
         QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
     active_version = -1;
 
-    okved_mdl = new myQSqlQueryModel();
+    okved_mdl = new QSqlTableModel();
     razdels_mdl = new QSqlTableModel();
 }
 Libqokved::~Libqokved()
@@ -18,63 +16,55 @@ Libqokved::~Libqokved()
   //  delete query;
 
 }
-myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
-        QSqlTableModel ( parent, db )
-{
-    qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
-
-    QSettings settings("qokved", "qokved");
-    QVariant var = settings.value("user_filter");
-    check = qvariant_cast<CheckedList>(var);
-    check = var.value<CheckedList>();
-    qDebug() << check.count();
-}
-
-myQSqlQueryModel::~myQSqlQueryModel ( )
-{
-    qDebug() << "dest";
-    qDebug() << check.keys().count();
-
-    QSettings settings("qokved", "qokved");
-    QVariant var;
-    var.setValue<CheckedList>(check);
-    settings.setValue("user_filter", var);
-}
-bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & value, int role )
-{
-    if (index.column() == 1  && role==Qt::CheckStateRole)
-    {
-	//if(value.toInt( == Qt::Checked)
-        //{
-        if ( value.type() == QVariant::Int )
-            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toString()] = value.toInt();
-	   // qDebug() << QAbstractItemModel::setData(index, 2, Qt::DisplayRole);
-
-	    return true;
-	//} else return QSqlTableModel::setData(index, 0, Qt::DisplayRole);
-    }
-	return QSqlTableModel::setData ( index, value, role );
-//qDebug() << value;
-	//setData(index, value);
-}
-
-QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
-{
-    if (item.column() == 1 && role==Qt::CheckStateRole)
-        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0);
-
-    return QSqlQueryModel::data(item, role);
-}
-
-Qt::ItemFlags myQSqlQueryModel::flags(const QModelIndex &index) const
-{
-	Qt::ItemFlags flags = QSqlTableModel::flags(index);
-	//if (index.column() > 1 && index.column() < 3)
-	//        flags |= Qt::ItemIsEditable;
-	if (index.column() == 1)
-		flags |= Qt::ItemIsUserCheckable;
-	return flags;
-}
+//myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
+//        QSqlTableModel ( parent, db )
+//{
+//    qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
+//
+//    QSettings settings("qokved", "qokved");
+//    QVariant var = settings.value("user_filter");
+//    check = qvariant_cast<CheckedList>(var);
+//    check = var.value<CheckedList>();
+//    qDebug() << check.count();
+//}
+//
+//myQSqlQueryModel::~myQSqlQueryModel ( )
+//{
+//    qDebug() << "dest";
+//    qDebug() << check.keys().count();
+//
+//    QSettings settings("qokved", "qokved");
+//    QVariant var;
+//    var.setValue<CheckedList>(check);
+//    settings.setValue("user_filter", var);
+//}
+//bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & value, int role )
+//{
+//    if (index.column() == 1  && role==Qt::CheckStateRole)
+//    {
+//        if ( value.type() == QVariant::Int )
+//            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toString()] = value.toInt();
+//	    return true;
+//
+//    }
+//	return QSqlTableModel::setData ( index, value, role );
+//}
+//
+//QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
+//{
+//    if (item.column() == 1 && role==Qt::CheckStateRole)
+//        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0);
+//
+//    return QSqlQueryModel::data(item, role);
+//}
+//
+//Qt::ItemFlags myQSqlQueryModel::flags(const QModelIndex &index) const
+//{
+//	Qt::ItemFlags flags = QSqlTableModel::flags(index);
+//	if (index.column() == 1)
+//		flags |= Qt::ItemIsUserCheckable;
+//	return flags;
+//}
 
 void Libqokved::update_db_date()
 {
@@ -161,7 +151,7 @@ QSqlTableModel* Libqokved::razdels_model()
     return razdels_mdl;
 }
 
-myQSqlQueryModel* Libqokved::okveds_model(int rid)
+QSqlTableModel* Libqokved::okveds_model(int rid)
 {
     okved_mdl->setTable(QString("okveds_%1").arg(QString::number(active_version)));
 

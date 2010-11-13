@@ -5,11 +5,11 @@
 #include <QDebug>
 #include <QStringList>
 
-typedef QHash<QString, int> CheckedList;
-Q_DECLARE_METATYPE(CheckedList)
+//typedef QHash<QString, int> CheckedList;
+//Q_DECLARE_METATYPE(CheckedList)
 
 
-class myQSqlQueryModel:public QSqlTableModel
+/*class myQSqlQueryModel:public QSqlTableModel
 	{
 		Q_OBJECT
 
@@ -20,7 +20,7 @@ class myQSqlQueryModel:public QSqlTableModel
 		QVariant data(const QModelIndex &item, int role) const;
 		Qt::ItemFlags flags(const QModelIndex &index) const;
 		bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
-	};
+        };*/
 
 class Libqokved: public QObject {
     Q_OBJECT
@@ -32,7 +32,7 @@ public:
     void create_tables();
     void fill_db_from_zakon(QString zakon);
     QSqlTableModel* razdels_model();
-    myQSqlQueryModel* okveds_model(int rid);
+    QSqlTableModel* okveds_model(int rid);
 
     bool setActiveVersion(int ver);
     int createVersion(QString name);
@@ -42,7 +42,7 @@ private:
     int active_version;
     QSqlDatabase db;
     QSqlQuery *query;
-    myQSqlQueryModel *okved_mdl;
+    QSqlTableModel *okved_mdl;
     QSqlTableModel *razdels_mdl;
 
 public slots:

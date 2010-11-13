@@ -22,7 +22,8 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved = new Libqokved(this);
 
-    hide_not_checked = false;
+    okveds_proxy_model = new OkvedsSortFilterProxyModel(this);
+    ui->okvedsView->setModel(okveds_proxy_model);
 
     #ifdef Q_WS_WIN
         appDir = QDir::convertSeparators(QDir::homePath() + "/Application Data/qokved");
@@ -62,8 +63,9 @@ void QOkvedMainWindow::versionsIndexChanged( int index )
 
 void QOkvedMainWindow::checkButtonClicked ( bool checked )
 {
-    hide_not_checked = checked;
-    row_filter_update();
+   // hide_not_checked = checked;
+    okveds_proxy_model->setHideChecks(checked);
+  //  row_filter_update();
 }
 
 void QOkvedMainWindow::updateVersionsList()
@@ -76,7 +78,11 @@ void QOkvedMainWindow::updateVersionsList()
     }
 
     QSettings settings("qokved", "qokved");
-    ui->okvedVersionBox->setCurrentIndex(ui->okvedVersionBox->findData(settings.value("last_version", 1).toInt()));
+    int cur_ind = ui->okvedVersionBox->findData(settings.value("last_version", 1).toInt());
+    if (cur_ind > -1)
+    {
+        ui->okvedVersionBox->setCurrentIndex(cur_ind);
+    } else ui->okvedVersionBox->setCurrentIndex( ui->okvedVersionBox->count()-1 );
 }
 
 void QOkvedMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -116,7 +122,6 @@ void QOkvedMainWindow::createDbFromTxt()
 void QOkvedMainWindow::errorMessage(QString message)
 {
     QMessageBox::critical(this, "QOkved", message, QMessageBox::Ok);
-
 }
 
 QString QOkvedMainWindow::findExistPath(QStringList path_list)
@@ -125,7 +130,6 @@ QString QOkvedMainWindow::findExistPath(QStringList path_list)
     {
         if ( QFile(path_list.at(i)).exists() ) return path_list.at(i);
     }
-
     return QString::null;
 }
 
@@ -161,38 +165,8 @@ void QOkvedMainWindow::action_oocalc()
 void QOkvedMainWindow::row_filter_update()
 {
      QString filter = ui->filterEdit->text();
-     QSqlTableModel *model = static_cast<QSqlTableModel*>(ui->okvedsView->model());
-
-  //   hide_not_checked
-
-     if (filter.contains(QRegExp(QString::fromUtf8("(?:[a-z]|[A-Z]|[а-я]|[А-Я])")))) {
-         for(int i = 0; i < model->rowCount(); i++)
-         {
-             if ( hide_not_checked && model->data(model->index(i, 1), Qt::CheckStateRole).toInt() == 0 )
-             {
-                 ui->okvedsView->hideRow(i);
-                 continue;
-             }
-             if (!model->data(model->index(i, 2)).toString().contains(filter, Qt::CaseInsensitive))
-             {
-                 ui->okvedsView->hideRow(i);
-             } else  ui->okvedsView->showRow(i);
-         }
-     } else {
-         for(int i = 0; i < model->rowCount(); i++)
-         {
-             if ( hide_not_checked && model->data(model->index(i, 1), Qt::CheckStateRole).toInt() == 0 )
-             {
-                 ui->okvedsView->hideRow(i);
-                 continue;
-             }
-             if (!model->data(model->index(i, 1)).toString().remove(".").startsWith(filter.remove("."), Qt::CaseInsensitive))  //Если код начинается с фильтра, без учета точке
-             {
-                 ui->okvedsView->hideRow(i);
-             } else  ui->okvedsView->showRow(i);
-         }
-     }
-
+     
+     okveds_proxy_model->setFilter(filter);
 }
 
 void QOkvedMainWindow::razdels_update()
@@ -214,7 +188,7 @@ void QOkvedMainWindow::razdels_update()
 
     ui->razdelsView->selectRow(0);
 
-    row_filter_update();
+   // row_filter_update();
 }
 
 void QOkvedMainWindow::razdels_row_changed()
@@ -223,14 +197,17 @@ void QOkvedMainWindow::razdels_row_changed()
     if (row > -1){
         QAbstractItemModel *model = ui->razdelsView->model();
 
-        ui->okvedsView->setModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
+//        ui->okvedsView->setModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
+
+        okveds_proxy_model->setSourceModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
 
         ui->okvedsView->hideColumn(0);
         ui->okvedsView->hideColumn(3);
         ui->okvedsView->hideColumn(4);
 
-        ui->okvedsView->horizontalHeader()->setResizeMode(2,QHeaderView::Stretch);
-        //  qDebug() << ui->razdelsView->model()->itemData(index).values()[0].toString();
+        ui->okvedsView->horizontalHeader()->setResizeMode(1,QHeaderView::Interactive);
+    //    ui->okvedsView->horizontalHeader()->setResizeMode(1,QHeaderView::Stretch);
+       //ui->okvedsView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
         connect(ui->okvedsView->selectionModel(),SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex & )),this,SLOT(additionUpdate( )));
     }
@@ -240,7 +217,7 @@ void QOkvedMainWindow::razdels_row_changed()
 
     connect ( model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(okvedDataChanged()));
 
-    row_filter_update();
+   // row_filter_update();
 }
 
 void QOkvedMainWindow::okvedDataChanged()
@@ -428,10 +405,7 @@ void QOkvedMainWindow::razdelzTablePopup(const QPoint & pos)
 
 void QOkvedMainWindow::tablePopup(const QPoint & pos)
 {
-
     QPoint globalPos = ui->okvedsView->mapToGlobal(pos);
-    // for QAbstractScrollArea and derived classes you would use:
-    // QPoint globalPos = myWidget->viewport()->mapToGlobal(pos);
     QModelIndex sel_mod = ui->okvedsView->selectionModel()->currentIndex();
     int row = sel_mod.row();
 
