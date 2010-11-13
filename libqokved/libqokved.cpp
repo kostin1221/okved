@@ -13,58 +13,7 @@ Libqokved::~Libqokved()
 {
     delete okved_mdl;
     delete razdels_mdl;
-  //  delete query;
-
 }
-//myQSqlQueryModel::myQSqlQueryModel ( QObject * parent, QSqlDatabase db ) :
-//        QSqlTableModel ( parent, db )
-//{
-//    qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
-//
-//    QSettings settings("qokved", "qokved");
-//    QVariant var = settings.value("user_filter");
-//    check = qvariant_cast<CheckedList>(var);
-//    check = var.value<CheckedList>();
-//    qDebug() << check.count();
-//}
-//
-//myQSqlQueryModel::~myQSqlQueryModel ( )
-//{
-//    qDebug() << "dest";
-//    qDebug() << check.keys().count();
-//
-//    QSettings settings("qokved", "qokved");
-//    QVariant var;
-//    var.setValue<CheckedList>(check);
-//    settings.setValue("user_filter", var);
-//}
-//bool myQSqlQueryModel::setData ( const QModelIndex & index, const QVariant & value, int role )
-//{
-//    if (index.column() == 1  && role==Qt::CheckStateRole)
-//    {
-//        if ( value.type() == QVariant::Int )
-//            check[QSqlQueryModel::data(QSqlQueryModel::index(index.row(), 0) ).toString()] = value.toInt();
-//	    return true;
-//
-//    }
-//	return QSqlTableModel::setData ( index, value, role );
-//}
-//
-//QVariant myQSqlQueryModel::data(const QModelIndex &item, int role) const
-//{
-//    if (item.column() == 1 && role==Qt::CheckStateRole)
-//        return check.value(QSqlQueryModel::data(QSqlQueryModel::index(item.row(), 0)).toString(), 0);
-//
-//    return QSqlQueryModel::data(item, role);
-//}
-//
-//Qt::ItemFlags myQSqlQueryModel::flags(const QModelIndex &index) const
-//{
-//	Qt::ItemFlags flags = QSqlTableModel::flags(index);
-//	if (index.column() == 1)
-//		flags |= Qt::ItemIsUserCheckable;
-//	return flags;
-//}
 
 void Libqokved::update_db_date()
 {
@@ -169,7 +118,6 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     } else filter.clear();
 
     okved_mdl->setFilter(filter);
-    //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     okved_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     okved_mdl->select();
@@ -178,8 +126,6 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
     okved_mdl->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
 
-//SELECT *, CAST( 0 AS INT) AS newint FROM sample
-
     connect (okved_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
@@ -187,6 +133,12 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
     return okved_mdl;
 }
 
+
+/*
+    Аргумент - строка с законом. Единственный закон 2007 года, который нашел - в консультанте
+    экспортируется от туда в таком форматировании, что страшно представить, поэтому парсер такой длинный,
+    чтоб хоть как-то сгладить ситуацию.
+*/
 void Libqokved::fill_db_from_zakon(QString zakon)
 {
     zakon = zakon.remove(0, zakon.indexOf(QString::fromUtf8("РАЗДЕЛ A")));

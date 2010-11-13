@@ -5,23 +5,6 @@
 #include <QDebug>
 #include <QStringList>
 
-//typedef QHash<QString, int> CheckedList;
-//Q_DECLARE_METATYPE(CheckedList)
-
-
-/*class myQSqlQueryModel:public QSqlTableModel
-	{
-		Q_OBJECT
-
-	public:
-                explicit myQSqlQueryModel ( QObject * parent = 0, QSqlDatabase db = QSqlDatabase() );
-                ~myQSqlQueryModel ( );
-                CheckedList check;
-		QVariant data(const QModelIndex &item, int role) const;
-		Qt::ItemFlags flags(const QModelIndex &index) const;
-		bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
-        };*/
-
 class Libqokved: public QObject {
     Q_OBJECT
 
