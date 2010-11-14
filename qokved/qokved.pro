@@ -11,16 +11,13 @@ INCLUDEPATH += ../libqokved
 
 SOURCES += main.cpp\
         qokvedmainwindow.cpp \
-    addokveddialog.cpp \
-    listsmanipulations.cpp
+    addokveddialog.cpp 
 
 HEADERS  += qokvedmainwindow.h \
-    addokveddialog.h \
-    listsmanipulations.h
+    addokveddialog.h 
 
 FORMS    += qokvedmainwindow.ui \
-    addokveddialog.ui \
-    listsmanipulations.ui
+    addokveddialog.ui 
 
 # TARGET = $$PREFIX/bin/qokved
 target.path = $$PREFIX/bin
