@@ -66,6 +66,17 @@ void QOkvedMainWindow::action_create_base_list()
 	qokved->save_global_list(okveds_proxy_model->getUserCheckList(), name);
 }
 
+void QOkvedMainWindow::action_remove_base_list()
+{
+    bool ok;
+
+    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Название предопределенного списка:"), qokved->globalLists(), 0, true, &ok );
+
+    if(ok && !name.isEmpty())
+	qokved->save_global_list(okveds_proxy_model->getUserCheckList(), name);
+}
+
+
 void QOkvedMainWindow::selectList()
 {
     bool ok;

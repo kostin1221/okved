@@ -1,5 +1,11 @@
 #include "libqokved.h"
 
+void Libqokved::removeGlobalList(QString name)
+{
+    QSqlQuery query;
+    query.exec(QString("DELETE FROM global_lists "
+	       "WHERE vid=%1 AND name=%2").arg(checks_true).arg(QString::number(active_version)).arg(name));
+}
 
 void Libqokved::save_global_list(CheckedList checks, QString name)
 {

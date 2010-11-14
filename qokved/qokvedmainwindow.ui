@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>634</width>
-    <height>464</height>
+    <width>663</width>
+    <height>476</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -160,7 +160,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>634</width>
+     <width>663</width>
      <height>20</height>
     </rect>
    </property>
@@ -178,6 +178,7 @@
     </property>
     <addaction name="action_create_db_from_txt"/>
     <addaction name="action_create_base_list"/>
+    <addaction name="action_delete_base_list"/>
     <addaction name="action_upload_base"/>
     <addaction name="action_block_bd_edit"/>
    </widget>
@@ -229,6 +230,11 @@
   <action name="actionTest">
    <property name="text">
     <string>test</string>
+   </property>
+  </action>
+  <action name="action_delete_base_list">
+   <property name="text">
+    <string>Удалить предопределенный список</string>
    </property>
   </action>
  </widget>
@@ -427,6 +433,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_delete_base_list</sender>
+   <signal>triggered()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>action_remove_base_list()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>331</x>
+     <y>237</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>additionTextChanged()</slot>
@@ -444,5 +466,6 @@
   <slot>actionBlockDbEdit(bool)</slot>
   <slot>action_create_base_list()</slot>
   <slot>selectList()</slot>
+  <slot>action_remove_base_list()</slot>
  </slots>
 </ui>

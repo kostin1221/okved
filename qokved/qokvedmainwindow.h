@@ -44,6 +44,7 @@ public slots:
     void action_copy_table();
     void action_oocalc();
     void action_create_base_list();
+    void action_remove_base_list();
 
     void actionBlockDbEdit(bool block);
     void tablePopup(const QPoint & pos);
