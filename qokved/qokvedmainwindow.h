@@ -58,6 +58,7 @@ public slots:
     void okvedUpdate(int row,QSqlRecord& record);
     void okvedDataChanged();
     void checkButtonClicked ( bool checked );
+    void selectList();
 };
 
 #endif // QOKVEDMAINWINDOW_H

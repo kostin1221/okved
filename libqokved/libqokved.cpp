@@ -1,5 +1,65 @@
 #include "libqokved.h"
 
+
+void Libqokved::save_global_list(CheckedList checks, QString name)
+{
+    QString checks_true;
+
+    QHashIterator<QString, int> i(checks);
+
+    while (i.hasNext()) {
+	i.next();
+	if (i.value() == 2) {
+	    if (!checks_true.isEmpty()) checks_true.append(",");
+	    checks_true.append(i.key());
+	}
+    }
+
+    QSqlQuery querys(QString("SELECT * FROM global_lists WHERE vid=\"%1\" AND name=\"%2\"").arg(QString::number(active_version)).arg(name));
+
+    if (querys.next())
+    {
+	QSqlQuery query;
+	query.exec(QString("UPDATE global_lists SET checks=%1 "
+		   "WHERE vid=%2 AND name=%3").arg(checks_true).arg(QString::number(active_version)).arg(name));
+
+    } else {
+	QSqlQuery query;
+	query.prepare("INSERT INTO global_lists (checks, vid, name) "
+		      "VALUES (:checks, :vid, :name)");
+	query.bindValue(":checks", 	checks_true);
+	query.bindValue(":name", 	name);
+	query.bindValue(":vid", active_version);
+	query.exec();
+    }
+}
+
+CheckedList Libqokved::getGlobalList(QString name)
+{
+    QSqlQuery querys(QString("SELECT checks FROM global_lists WHERE vid=\"%1\" AND name=\"%2\"").arg(QString::number(active_version)).arg(name));
+    int checksNo = querys.record().indexOf("checks");
+    CheckedList checklist;
+    while (querys.next()) {
+	QString checks = querys.value(checksNo).toString();
+	QStringList checks_list = checks.split(",");
+
+	for (int i = 0; i < checks_list.size(); ++i)
+	    checklist.insert(checks_list.at(i), 2);
+    }
+    return checklist;
+}
+
+QStringList Libqokved::globalLists()
+{
+    QSqlQuery querys(QString("SELECT name FROM global_lists WHERE vid=\"%1\"").arg(QString::number(active_version)));
+    QStringList ret;
+    int nameNo = querys.record().indexOf("name");
+    while (querys.next())
+	ret.append(querys.value(nameNo).toString());
+
+    return ret;
+}
+
 Libqokved::Libqokved(QObject* parent = 0) :
         QObject(parent)
 {
@@ -9,6 +69,7 @@ Libqokved::Libqokved(QObject* parent = 0) :
     razdels_mdl = false;
     okved_mdl = false;
 
+    qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
 }
 Libqokved::~Libqokved()
 {
@@ -79,6 +140,9 @@ void Libqokved::create_tables()
       qDebug() << query.lastError();
     if (!query.exec("CREATE TABLE versions (\"id\" INTEGER PRIMARY KEY, \"name\" TEXT)"))
       qDebug() << query.lastError();
+    if (!query.exec("CREATE TABLE global_lists (\"lid\" INTEGER PRIMARY KEY, \"checks\" BLOB, \"oid\" INTEGER)"))
+      qDebug() << query.lastError();
+
     update_db_date();
 }
 
@@ -91,7 +155,7 @@ QSqlTableModel* Libqokved::razdels_model()
     razdels_mdl->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("id"));
     razdels_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Раздел"));
 
-    //razdels_mdl->setSort(0, Qt::AscendingOrder); // Сортировка по id
+    razdels_mdl->setSort(0, Qt::AscendingOrder); // Сортировка по id
     razdels_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     connect (razdels_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
@@ -250,11 +314,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 	    query.bindValue(":number", okved_number);
 	    query.bindValue(":name", id_str);
 
-
 	    query.bindValue(":razdel_id", used_razdel);
-//                if (last_podrazdel!=0) {
-//                    query.bindValue(":razdel_id", last_podrazdel);
-//                } else query.bindValue(":razdel_id", last_razdel);
 
 	    QString ab;
 	    if (prilozhenie_a.contains(okved_number+" ")){

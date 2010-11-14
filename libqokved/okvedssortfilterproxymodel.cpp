@@ -4,15 +4,35 @@
 #include <QDebug>
 #include <QSqlTableModel>
 
+void OkvedsSortFilterProxyModel::setSourceModel ( QSqlTableModel * sourceModel )
+{
+    okved_table_name = sourceModel->tableName();
+    QSettings settings("qokved", "qokved");
+    QVariant var = settings.value("user_filter_"+okved_table_name);
+    user_check = var.value<CheckedList>();
+    setUserChecksList ( );
+
+    QSortFilterProxyModel::setSourceModel ( sourceModel );
+}
+
+void OkvedsSortFilterProxyModel::setGlobalChecksList ( CheckedList checklist )
+{
+    check = checklist;
+    invalidateFilter();
+}
+
+void OkvedsSortFilterProxyModel::setUserChecksList ( )
+{
+    check = user_check;
+    invalidateFilter();
+}
+
 OkvedsSortFilterProxyModel::OkvedsSortFilterProxyModel(QObject *parent) :
     QSortFilterProxyModel(parent)
 {
-	hide_not_checked = false;
+    hide_not_checked = false;
     qRegisterMetaTypeStreamOperators<CheckedList>("CheckedList");
-    QSettings settings("qokved", "qokved");
-    QVariant var = settings.value("user_filter");
-    check = qvariant_cast<CheckedList>(var);
-    check = var.value<CheckedList>();
+
 }
 
 
@@ -20,8 +40,8 @@ OkvedsSortFilterProxyModel::~OkvedsSortFilterProxyModel()
 {
     QSettings settings("qokved", "qokved");
     QVariant var;
-    var.setValue<CheckedList>(check);
-    settings.setValue("user_filter", var);
+    var.setValue<CheckedList>(user_check);
+    settings.setValue("user_filter_"+okved_table_name, var);
 }
 
 bool OkvedsSortFilterProxyModel::filterAcceptsRow(int sourceRow,
@@ -30,12 +50,6 @@ bool OkvedsSortFilterProxyModel::filterAcceptsRow(int sourceRow,
     int check_state = check.value(sourceModel()->index(sourceRow, 0, sourceParent).data(Qt::DisplayRole).toString(), Qt::Unchecked);
     if (hide_not_checked && check_state == Qt::Unchecked)
         return false;
-
-    if (hide_not_checked) {
-        qDebug() << check.value(sourceModel()->data(sourceModel()->index(sourceRow, 0), Qt::DisplayRole).toString(), Qt::Unchecked);
-        qDebug() << sourceModel()->data(sourceModel()->index(sourceRow, 1)).toString();
-        qDebug() << sourceRow;
-    }
    
     switch (filter_type){
     case NAME:
@@ -46,16 +60,10 @@ bool OkvedsSortFilterProxyModel::filterAcceptsRow(int sourceRow,
     case NUMBER:
 	QString sm = sourceModel()->data(sourceModel()->index(sourceRow, 1)).toString();
 	sm.remove(".");
-	qDebug() << filter_string;
-	qDebug() << sm;
-	if (!sm.startsWith(filter_string)){
-	    qDebug() << filter_string;
-	    qDebug() << sm;
-	    return false;}
+	if (!sm.startsWith(filter_string))
+	    return false;
 	break;
-
     }
-
 
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
@@ -65,14 +73,12 @@ bool OkvedsSortFilterProxyModel::setData ( const QModelIndex & index, const QVar
     if (index.column() == 1  && role==Qt::CheckStateRole)
     {
         if ( value.type() == QVariant::Int ) {
-	   // qDebug() << sourceModel()->data(sourceModel()->index(index.row(), 0), 0).toString();
-	    //qDebug() << check[data(mapFromSource(index), 0).toString()];
+	    user_check[sourceModel()->index(mapToSource(index).row(), 0).data().toString()] = value.toInt();
 	    check[sourceModel()->index(mapToSource(index).row(), 0).data().toString()] = value.toInt();
             return true;
         }
 
     }
-       // return QSortFilterProxyModel::setData ( index, value, role );
        return  sourceModel()->setData ( index, value, role );
 }
 
@@ -88,7 +94,7 @@ QVariant OkvedsSortFilterProxyModel::data(const QModelIndex &item, int role) con
 Qt::ItemFlags OkvedsSortFilterProxyModel::flags(const QModelIndex &index) const
 {
         Qt::ItemFlags flags = QSortFilterProxyModel::flags(index);
-        if (index.column() == 1)
+	if (index.column() == 1 && !hide_not_checked)
                 flags |= Qt::ItemIsUserCheckable;
         return flags;
 }

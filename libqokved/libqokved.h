@@ -1,6 +1,8 @@
 #ifndef LIBQOKVED_H
 #define LIBQOKVED_H
 
+#include "okvedssortfilterproxymodel.h"
+
 #include <QtSql>
 #include <QDebug>
 #include <QStringList>
@@ -20,6 +22,10 @@ public:
     bool setActiveVersion(int ver);
     int createVersion(QString name);
     QMap<int, QString> versions();
+
+    void save_global_list(CheckedList checks, QString name);
+    CheckedList getGlobalList(QString name);
+    QStringList globalLists();
 
 private:
     int active_version;

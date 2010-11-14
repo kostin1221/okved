@@ -53,6 +53,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="pushSelectCheckList">
+            <property name="text">
+             <string>Список...</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -174,14 +181,8 @@
     <addaction name="action_upload_base"/>
     <addaction name="action_block_bd_edit"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>Предопределенные списки</string>
-    </property>
-   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
-   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_table">
@@ -223,6 +224,11 @@
   <action name="action_upload_base">
    <property name="text">
     <string>Выгрузить базу на сервер</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>test</string>
    </property>
   </action>
  </widget>
@@ -405,6 +411,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushSelectCheckList</sender>
+   <signal>clicked()</signal>
+   <receiver>QOkvedMainWindow</receiver>
+   <slot>selectList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>331</x>
+     <y>38</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>additionTextChanged()</slot>
@@ -421,5 +443,6 @@
   <slot>checkButtonClicked(bool)</slot>
   <slot>actionBlockDbEdit(bool)</slot>
   <slot>action_create_base_list()</slot>
+  <slot>selectList()</slot>
  </slots>
 </ui>

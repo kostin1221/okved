@@ -13,10 +13,12 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += libqokved.cpp \
-    odswriter.cpp
+    odswriter.cpp \
+    okvedssortfilterproxymodel.cpp
 
 HEADERS += libqokved.h \
-    odswriter.h
+    odswriter.h \
+    okvedssortfilterproxymodel.h
 
 TARGET = qokved
 

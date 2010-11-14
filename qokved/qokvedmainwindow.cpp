@@ -47,18 +47,49 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
 
     qokved->setDbPath(db_path);
 
-
     QSettings settings("qokved", "qokved");
     ui->filterEdit->setText(settings.value("last_filter").toString());
 
     updateVersionsList();
     razdels_update();
+
+    row_filter_update();
 }
 
 void QOkvedMainWindow::action_create_base_list()
 {
-    listsManipulations *dialog = new listsManipulations(this);
-    dialog->exec();
+    bool ok;
+
+    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Название предопределенного списка:"), qokved->globalLists(), 0, true, &ok );
+
+    if(ok && !name.isEmpty())
+	qokved->save_global_list(okveds_proxy_model->getUserCheckList(), name);
+}
+
+void QOkvedMainWindow::selectList()
+{
+    bool ok;
+    QStringList checksList;
+    checksList.append(QString::fromUtf8("Пользовательский"));
+    checksList.append(qokved->globalLists());
+
+    QString name = QInputDialog::getItem( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Название предопределенного списка:"), checksList, 0, false, &ok );
+
+    if(ok && !name.isEmpty())
+	if(name == QString::fromUtf8("Пользовательский"))
+	{
+	    okveds_proxy_model->setHideChecks(false);
+	    ui->checkedButton->setChecked(false);
+	    ui->checkedButton->setEnabled(true);
+	    okveds_proxy_model->setUserChecksList();
+	} else {
+	    okveds_proxy_model->setHideChecks(true);
+	    ui->checkedButton->setChecked(true);
+	    ui->checkedButton->setEnabled(false);
+	    okveds_proxy_model->setGlobalChecksList(qokved->getGlobalList(name));
+	    //okveds_proxy_model->setHideChecks(true);
+	}
+
 }
 
 void QOkvedMainWindow::versionsIndexChanged( int index )
@@ -74,6 +105,7 @@ void QOkvedMainWindow::actionBlockDbEdit(bool block)
 
     ui->additionView->setReadOnly(db_edit_blocked);
     ui->action_create_db_from_txt->setEnabled(!db_edit_blocked);
+    ui->action_create_base_list->setEnabled(!db_edit_blocked);
 
     if (db_edit_blocked)
     {
@@ -87,9 +119,7 @@ void QOkvedMainWindow::actionBlockDbEdit(bool block)
 
 void QOkvedMainWindow::checkButtonClicked ( bool checked )
 {
-   // hide_not_checked = checked;
     okveds_proxy_model->setHideChecks(checked);
-  //  row_filter_update();
 }
 
 void QOkvedMainWindow::updateVersionsList()
@@ -221,8 +251,6 @@ void QOkvedMainWindow::razdels_row_changed()
     if (row > -1){
         QAbstractItemModel *model = ui->razdelsView->model();
 
-//        ui->okvedsView->setModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
-
         okveds_proxy_model->setSourceModel(qokved->okveds_model(model->data(model->index(row, 0)).toInt()));
 
         ui->okvedsView->hideColumn(0);
@@ -246,28 +274,12 @@ void QOkvedMainWindow::razdels_row_changed()
 
 void QOkvedMainWindow::okvedDataChanged()
 {
-
-//    QSqlTableModel *model =  static_cast<QSqlTableModel*>(ui->okvedsView->model());
-//
-//    ui->okvedsView->hideColumn(0);
-//    ui->okvedsView->hideColumn(3);
-//    ui->okvedsView->hideColumn(4);
     row_filter_update();
-  //  model->insertColumn(0);
-   // model->setHeaderData(0, Qt::Horizontal, QString::fromUtf8("bool"));
 }
 
 void QOkvedMainWindow::okvedUpdate(int row,QSqlRecord& record)
 {
-//    ui->okvedsView->hideColumn(0);
-//    ui->okvedsView->hideColumn(3);
-//    ui->okvedsView->hideColumn(4);
 
-//    qDebug() << "update: " << row;
-//    qDebug() << record.count();
-//  //  record.remove(4);
-//    record.remove(5);
-//    qDebug() << record.count();
 }
 
 void QOkvedMainWindow::additionUpdate()

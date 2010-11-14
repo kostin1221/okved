@@ -12,13 +12,11 @@ INCLUDEPATH += ../libqokved
 SOURCES += main.cpp\
         qokvedmainwindow.cpp \
     addokveddialog.cpp \
-    listsmanipulations.cpp\
-    okvedssortfilterproxymodel.cpp
+    listsmanipulations.cpp
 
 HEADERS  += qokvedmainwindow.h \
     addokveddialog.h \
-    listsmanipulations.h\
-    okvedssortfilterproxymodel.h
+    listsmanipulations.h
 
 FORMS    += qokvedmainwindow.ui \
     addokveddialog.ui \
