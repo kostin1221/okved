@@ -26,6 +26,7 @@ public:
     void save_global_list(CheckedList checks, QString name);
     CheckedList getGlobalList(QString name);
     QStringList globalLists();
+    void removeGlobalList(QString name);
 
 private:
     int active_version;
@@ -36,6 +37,9 @@ private:
 
 public slots:
     void update_db_date();
+
+signals:
+    void error(QString error);
 
 };
 

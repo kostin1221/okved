@@ -60,7 +60,7 @@ void QOkvedMainWindow::action_create_base_list()
 {
     bool ok;
 
-    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Название предопределенного списка:"), qokved->globalLists(), 0, true, &ok );
+    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Предопределенный список:"), qokved->globalLists(), 0, true, &ok );
 
     if(ok && !name.isEmpty())
 	qokved->save_global_list(okveds_proxy_model->getUserCheckList(), name);
@@ -68,12 +68,17 @@ void QOkvedMainWindow::action_create_base_list()
 
 void QOkvedMainWindow::action_remove_base_list()
 {
+    if (qokved->globalLists().count() == 0)
+    {
+        errorMessage(QString::fromUtf8("Нет ни одного списка для удаления"));
+        return;
+    }
     bool ok;
 
-    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Введите название нового списка, либо укажите из списка старый для замены"), QString::fromUtf8("Название предопределенного списка:"), qokved->globalLists(), 0, true, &ok );
+    QString name = QInputDialog::getItem ( this, QString::fromUtf8("Список для удаления"), QString::fromUtf8("Предопределенный список:"), qokved->globalLists(), 0, false, &ok );
 
     if(ok && !name.isEmpty())
-	qokved->save_global_list(okveds_proxy_model->getUserCheckList(), name);
+        qokved->removeGlobalList(name);
 }
 
 
