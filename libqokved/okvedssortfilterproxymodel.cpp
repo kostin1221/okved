@@ -8,9 +8,16 @@ void OkvedsSortFilterProxyModel::setSourceModel ( QSqlTableModel * sourceModel )
 {
     okved_table_name = sourceModel->tableName();
     QSettings settings("qokved", "qokved");
-    QVariant var = settings.value("user_filter_"+okved_table_name);
-    user_check = var.value<CheckedList>();
-    setUserChecksList ( );
+    if (user_check.count() > 0)
+    {
+        QVariant var;
+        var.setValue<CheckedList>(user_check);
+        settings.setValue("user_filter_"+okved_table_name, var);
+    } else {
+        QVariant var = settings.value("user_filter_"+okved_table_name);
+        user_check = var.value<CheckedList>();
+        setUserChecksList ( );
+    }
 
     QSortFilterProxyModel::setSourceModel ( sourceModel );
 }

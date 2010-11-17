@@ -186,16 +186,16 @@ QSqlTableModel* Libqokved::okveds_model(int rid)
 
     okved_mdl->setEditStrategy(QSqlTableModel::OnFieldChange);
 
-    okved_mdl->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
-    okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
-    okved_mdl->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
-
     connect (okved_mdl, SIGNAL(beforeDelete(int)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeInsert(QSqlRecord&)), this, SLOT(update_db_date()));
     connect (okved_mdl, SIGNAL(beforeUpdate(int,QSqlRecord&)), this, SLOT(update_db_date()));
     }
 
     okved_mdl->setTable(QString("okveds_%1").arg(QString::number(active_version)));
+
+    okved_mdl->setSort(1, Qt::AscendingOrder); // Сортировка по номеру
+    okved_mdl->setHeaderData(1, Qt::Horizontal, QString::fromUtf8("Номер"));
+    okved_mdl->setHeaderData(2, Qt::Horizontal, QString::fromUtf8("Наименование"));
 
     QString filter;
     if (rid != 1) {
