@@ -16,9 +16,13 @@ public:
 
 private:
     QString copyName;
+    bool removeDir(const QString &dirName);
 
 signals:
     void errorMessage(QString error);
+
+private slots:
+    void soffice_finished( int exitCode );
 
 };
 

@@ -39,7 +39,8 @@ void Libqokved::save_global_list(CheckedList checks, QString name)
 	query.bindValue(":checks", 	checks_true);
 	query.bindValue(":name", 	name);
 	query.bindValue(":vid", active_version);
-	query.exec();
+	if (!query.exec())
+	  qDebug() << query.lastError();
     }
 }
 
@@ -149,7 +150,7 @@ void Libqokved::create_tables()
       qDebug() << query.lastError();
     if (!query.exec("CREATE TABLE versions (\"id\" INTEGER PRIMARY KEY, \"name\" TEXT)"))
       qDebug() << query.lastError();
-    if (!query.exec("CREATE TABLE global_lists (\"lid\" INTEGER PRIMARY KEY, \"checks\" BLOB, \"oid\" INTEGER)"))
+    if (!query.exec("CREATE TABLE global_lists (\"sid\" INTEGER PRIMARY KEY AUTOINCREMENT,\"checks\" TEXT,	\"vid\" INTEGER,\"name\" TEXT"))
       qDebug() << query.lastError();
 
     update_db_date();
@@ -269,7 +270,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 	     skobki = false;
 	}
 	else if (skobki){ continue;}
-	else if (line_str.startsWith(QString::fromUtf8("РАЗДЕЛ "))){
+	else if (line_str.startsWith(QString::fromUtf8("Раздел "), Qt::CaseInsensitive)){
 	    QSqlQuery query;
 	    query.prepare(QString("INSERT INTO razdelz_%1 (name, father) "
 			       "VALUES (:name, 0)").arg(QString::number(active_version)));
@@ -281,7 +282,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 	    last_podrazdel = 0;
 	    change_used_razdel = true;
 
-	} else if (line_str.startsWith(QString::fromUtf8("Подраздел "))){
+	} else if (line_str.startsWith(QString::fromUtf8("Подраздел "), Qt::CaseInsensitive)){
 
 	    pordazdel_str.clear();
 	    podrazdel_info = true;
@@ -301,7 +302,7 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 	    last_podrazdel = query.lastInsertId().toInt();
 	    change_used_razdel = true;
 
-	} else if (line_str.startsWith(QString::fromUtf8("Эта группировка ")) || line_str.startsWith(QString::fromUtf8("В группировке "))){
+	} else if (line_str.startsWith(QString::fromUtf8("Эта группировка "), Qt::CaseInsensitive) || line_str.startsWith(QString::fromUtf8("В группировке "), Qt::CaseInsensitive)){
 	    add_info = true;
 	    if (!add_str.isEmpty()) add_str.append("\n");
 
@@ -326,16 +327,23 @@ void Libqokved::fill_db_from_zakon(QString zakon)
 	    query.bindValue(":razdel_id", used_razdel);
 
 	    QString ab;
-	    if (prilozhenie_a.contains(okved_number+" ")){
-		QString aa = prilozhenie_a.right(prilozhenie_a.count() - prilozhenie_a.indexOf(okved_number+" "));
+	    if (prilozhenie_a.contains("\n"+okved_number)){
+		QString aa = prilozhenie_a.right(prilozhenie_a.count() - prilozhenie_a.indexOf(QRegExp('\n' + okved_number)));
 
-		ab = aa.left(aa.indexOf(QRegExp(QString::fromUtf8("(?:\n\\s*[0-9]{1,2}|РАЗДЕЛ |Подраздел )")), aa.indexOf(" ")));
+		ab = aa.left(aa.indexOf(QRegExp(QString::fromUtf8("(?:\n\\s*[0-9]{1,2}|РАЗДЕЛ |Подраздел )"), Qt::CaseInsensitive), aa.indexOf(" ")));
 
 		while (ab.contains("  ")) {
 		    ab = ab.replace("  ", " ");
 		};
 
-		query.bindValue(":addition", ab);
+		ab.replace("\n\n", "\n");
+
+		if (ab.indexOf(QString::fromUtf8("Эта группировка "), Qt::CaseInsensitive)>0)
+		{
+		    ab.remove(0, ab.indexOf(QString::fromUtf8("Эта группировка "), Qt::CaseInsensitive));
+
+		    query.bindValue(":addition", ab);
+		} else query.bindValue(":addition", "");
 	    } else query.bindValue(":addition", "");
 
 	    if (ab == okved_number + " " +id_str.replace("\n", "")) query.bindValue(":addition", "");
