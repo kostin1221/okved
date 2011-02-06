@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "libqokved.h"
+#include "odswriter.h"
 
 #include "okvedssortfilterproxymodel.h"
 
@@ -32,6 +33,8 @@ private:
 
     OkvedsSortFilterProxyModel* okveds_proxy_model;
     bool db_edit_blocked;
+
+    OdsWriter *ods_writer;
 
 public slots:
     void razdels_row_changed();

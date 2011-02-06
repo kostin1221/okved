@@ -154,12 +154,15 @@ bool OdsWriter::save( const QString & fname )
     }
     zip.close();
 
-    QDir dir(copyName);
-    qDebug() << "rm: " << copyName<< removeDir(copyName);
+    //Удалить каталог с временными файлами
+    removeDir(copyName);
+
+    ods_list.append(fname);
 
     return true;
 }
 
+//Неужели в QT нет встроенной функции для удаления каталога с данными? rmpath() возвращает false и ничего не удаляет
 bool OdsWriter::removeDir(const QString &dirName)
 {
     bool result = true;
@@ -184,14 +187,8 @@ bool OdsWriter::removeDir(const QString &dirName)
     return result;
 }
 
-void OdsWriter::soffice_finished( int exitCode ){
-
-    qDebug() << "exit";
-}
-
 bool OdsWriter::startOO( const QString & fname )
 {
-
     QProcess *process = new QProcess(this);
 
     process->start(QString("soffice"), QStringList() << fname);
@@ -200,8 +197,17 @@ bool OdsWriter::startOO( const QString & fname )
         errorMessage(QString::fromUtf8("Ошибка запуска OpenOffice, проверьте что он установлен и ooffice присутствует в PATH"));
         return false;
     }
-    connect(process,SIGNAL(finished(int)),this,SLOT(soffice_finished(int)));
     return true;
 }
 
+OdsWriter::~OdsWriter()
+{
+
+    QDir dir(".");
+    for (int i = 0; i < ods_list.size(); ++i)
+    {
+	dir.remove(ods_list.at(i));
+    }
+
+}
 
