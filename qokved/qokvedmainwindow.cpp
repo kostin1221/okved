@@ -1,7 +1,6 @@
 #include "qokvedmainwindow.h"
 #include "ui_qokvedmainwindow.h"
 
-#include "odswriter.h"
 #include "addokveddialog.h"
 #include "listsmanipulations.h"
 
@@ -54,6 +53,10 @@ QOkvedMainWindow::QOkvedMainWindow(QWidget *parent) :
     razdels_update();
 
     row_filter_update();
+
+
+    ods_writer = new OdsWriter(this);
+    connect(ods_writer, SIGNAL(errorMessage(QString)), this, SLOT(errorMessage(QString)));
 }
 
 void QOkvedMainWindow::action_create_base_list()
@@ -81,7 +84,6 @@ void QOkvedMainWindow::action_remove_base_list()
         qokved->removeGlobalList(name);
 }
 
-
 void QOkvedMainWindow::selectList()
 {
     bool ok;
@@ -103,7 +105,6 @@ void QOkvedMainWindow::selectList()
 	    ui->checkedButton->setChecked(true);
 	    ui->checkedButton->setEnabled(false);
 	    okveds_proxy_model->setGlobalChecksList(qokved->getGlobalList(name));
-	    //okveds_proxy_model->setHideChecks(true);
 	}
 
 }
@@ -206,8 +207,6 @@ QString QOkvedMainWindow::findExistPath(QStringList path_list)
 void QOkvedMainWindow::action_oocalc()
 {
     if (ui->okvedsView->model()->rowCount()==0) return;
-    OdsWriter *ods_writer = new OdsWriter(this);
-    connect(ods_writer, SIGNAL(errorMessage(QString)), this, SLOT(errorMessage(QString)));
 
     QString template_path = findExistPath(QStringList() << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/templates/soffice.ods") << QDir::convertSeparators(QCoreApplication::applicationDirPath () + "/../share/qokved/templates/soffice.ods"));
     if (template_path.isEmpty() || template_path.isNull())
@@ -541,4 +540,5 @@ QOkvedMainWindow::~QOkvedMainWindow()
 
     delete ui;
     delete qokved;
+    delete ods_writer;
 }

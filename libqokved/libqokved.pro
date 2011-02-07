@@ -13,11 +13,14 @@ CONFIG += staticlib
 
 SOURCES += libqokved.cpp \
     odswriter.cpp \
-    okvedssortfilterproxymodel.cpp
+    okvedssortfilterproxymodel.cpp \
+    qzip/qzip.cpp
 
 HEADERS += libqokved.h \
     odswriter.h \
-    okvedssortfilterproxymodel.h
+    okvedssortfilterproxymodel.h \
+    qzip/qzipreader_p.h   \
+    qzip/qzipwriter_p.h
 
 win32:TARGET = qokved
 else:TARGET = qokved
