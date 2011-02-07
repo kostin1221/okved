@@ -4,11 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += network sql
+QT       += core network sql
 
 QT       += gui
 
-TARGET = libqokved
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -20,5 +19,6 @@ HEADERS += libqokved.h \
     odswriter.h \
     okvedssortfilterproxymodel.h
 
-TARGET = qokved
+win32:TARGET = qokved
+else:TARGET = qokved
 

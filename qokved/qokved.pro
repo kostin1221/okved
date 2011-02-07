@@ -22,8 +22,15 @@ FORMS    += qokvedmainwindow.ui \
 # TARGET = $$PREFIX/bin/qokved
 target.path = $$PREFIX/bin
 INSTALLS += target
-LIBS += ../libqokved/libqokved.a
-PRE_TARGETDEPS += ../libqokved/libqokved.a
+
+CONFIG( debug, debug|release ) {
+		LIBS += ../libqokved/debug/libqokved.a
+		PRE_TARGETDEPS += ../libqokved/debug/libqokved.a
+} else {
+		LIBS += ../libqokved/Release/libqokved.a
+		PRE_TARGETDEPS += ../libqokved/Release/libqokved.a
+}
+
 RESOURCES += qokved.qrc
 templates.files = templates/soffice.ods \
     templates/qokved.db.default
